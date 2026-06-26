@@ -14,6 +14,19 @@ import { SessionState } from '../session/state.js';
 import { createStateSocketServer } from '../socket/server.js';
 import { watchMcpAwakenSignal } from './mcp-awaken.js';
 
+async function waitUntil(
+  predicate: () => boolean,
+  { timeoutMs = 3000, intervalMs = 25 }: { timeoutMs?: number; intervalMs?: number } = {},
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (!predicate()) {
+    if (Date.now() >= deadline) {
+      return;
+    }
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, intervalMs));
+  }
+}
+
 async function backupSignalFile(): Promise<string | null> {
   try {
     return await readFile(mcpAwakenSignalPath(), 'utf8');
@@ -141,7 +154,7 @@ describe.skipIf(!hasPonytailReleaseBundle())('release-bundle: watchMcpAwakenSign
 
     watchHandle = watchMcpAwakenSignal(config, session, stateSocket);
 
-    await new Promise((resolvePromise) => setTimeout(resolvePromise, 250));
+    await waitUntil(() => session.getActive() !== null);
 
     expect(session.getActive()?.engram.id).toBe(fixture.engramId);
     expect(session.getActive()?.directory).toBe(fixture.engramDir);
