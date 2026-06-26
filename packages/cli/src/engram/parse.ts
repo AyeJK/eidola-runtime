@@ -99,10 +99,7 @@ function parseTransitionsAndPlayback(
       ? (data.transitions as Record<string, unknown>)
       : {};
 
-  // For component renderers, transitions.default may be an object; treat as crossfade
-  const transitionDefaultRaw = transitionsRaw.default;
-  const transitionDefaultStr =
-    typeof transitionDefaultRaw === 'object' ? 'crossfade' : transitionDefaultRaw;
+  const transitionDefaultStr = transitionsRaw.default;
   const defaultTransition: 'crossfade' | 'cut' =
     transitionDefaultStr === undefined
       ? 'crossfade'
@@ -200,49 +197,14 @@ export function parseVesselYaml(raw: unknown): VesselConfig {
   const data = requireObject(raw, 'vessel.yaml root');
 
   const type = data.type;
-  if (
-    type !== 'lottie' &&
-    type !== 'webm' &&
-    type !== 'mp4' &&
-    type !== 'gif' &&
-    type !== 'component'
-  ) {
+  if (type !== 'lottie' && type !== 'webm' && type !== 'mp4' && type !== 'gif') {
     throw new EngramLoadError(
-      'Field "type" must be "lottie", "webm", "mp4", "gif", or "component".',
+      'Field "type" must be "lottie", "webm", "mp4", or "gif".',
       'INVALID_FIELD',
     );
   }
 
-  // component renderers manage expressions internally; lottie/webm require them
-  const expressions = parseExpressions(data, type !== 'component');
-
-  // Parse optional fallback block (present when type === 'component')
-  let fallback: Omit<VesselConfig, 'fallback'> | undefined;
-  if (
-    type === 'component' &&
-    data.fallback &&
-    typeof data.fallback === 'object' &&
-    !Array.isArray(data.fallback)
-  ) {
-    const fb = data.fallback as Record<string, unknown>;
-    const fbExpressions = parseExpressions(fb, true);
-    const { transitions: fbTransitions, playback: fbPlayback } = parseTransitionsAndPlayback(fb);
-    const fbType = fb.type;
-    if (fbType !== 'lottie' && fbType !== 'webm' && fbType !== 'mp4' && fbType !== 'gif') {
-      throw new EngramLoadError(
-        'Field "fallback.type" must be "lottie", "webm", "mp4", or "gif".',
-        'INVALID_FIELD',
-      );
-    }
-    fallback = {
-      type: fbType,
-      pack: requireString(fb.pack, 'fallback.pack'),
-      expressions: fbExpressions,
-      transitions: fbTransitions,
-      playback: fbPlayback,
-    };
-  }
-
+  const expressions = parseExpressions(data, true);
   const { transitions, playback } = parseTransitionsAndPlayback(data);
 
   return {
@@ -251,6 +213,5 @@ export function parseVesselYaml(raw: unknown): VesselConfig {
     expressions,
     transitions,
     playback,
-    ...(fallback !== undefined ? { fallback } : {}),
   };
 }

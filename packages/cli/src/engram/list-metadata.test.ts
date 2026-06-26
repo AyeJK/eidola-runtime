@@ -41,25 +41,6 @@ describe('parseLooseVesselPreview', () => {
     });
   });
 
-  it('uses fallback pack for component vessels', () => {
-    const preview = parseLooseVesselPreview({
-      type: 'component',
-      pack: 'ignored',
-      fallback: {
-        type: 'webm',
-        pack: 'caveman-v1',
-        expressions: {
-          idle: 'idle.webm',
-        },
-      },
-    });
-
-    expect(preview).toEqual({
-      vesselType: 'webm',
-      pack: 'caveman-v1',
-      idleClip: 'idle.webm',
-    });
-  });
 });
 
 describe('humanizeEngramFolderId', () => {

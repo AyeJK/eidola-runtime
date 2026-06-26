@@ -52,21 +52,11 @@ export function parseLooseVesselPreview(raw: unknown): { vesselType: string; pac
     return null;
   }
 
-  let vesselType = readString(data.type);
-  let pack = readString(data.pack);
-  let expressions = asRecord(data.expressions);
+  const vesselType = readString(data.type);
+  const pack = readString(data.pack);
+  const expressions = asRecord(data.expressions);
 
-  if (vesselType === 'component') {
-    const fallback = asRecord(data.fallback);
-    if (!fallback) {
-      return null;
-    }
-    vesselType = readString(fallback.type);
-    pack = readString(fallback.pack) ?? pack;
-    expressions = asRecord(fallback.expressions) ?? expressions;
-  }
-
-  if (!vesselType || !pack || vesselType === 'component') {
+  if (!vesselType || !pack) {
     return null;
   }
 

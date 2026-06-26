@@ -214,10 +214,6 @@ export class VesselResolver {
     config: ShrineVesselConfig,
     clip: string,
   ): Promise<string> {
-    if (config.rendererType === 'component') {
-      return clip;
-    }
-
     return this.resolveClip(config.pack, clip, config.idleClip);
   }
 

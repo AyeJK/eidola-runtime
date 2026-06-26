@@ -19,12 +19,10 @@
   "dependencies": {
     "@eidola/cli": "workspace:*",
     "@eidola/tool-state": "workspace:*",
-    "lottie-web": "^5.13.0",
-    "three": "^0.176.0"
+    "lottie-web": "^5.13.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
-    "@types/three": "^0.176.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.5",
     "vitest": "^3.2.4"

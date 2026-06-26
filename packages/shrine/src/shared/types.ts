@@ -10,10 +10,10 @@ export const SHRINE_CHANNELS = {
   log: 'shrine:log',
 } as const;
 
-export type ShrineRendererType = 'lottie' | 'webm' | 'gif' | 'component';
+export type ShrineRendererType = 'lottie' | 'webm' | 'gif';
 
 export interface ShrineVesselConfig {
-  /** Clip format (lottie/webm) or component (Three.js pack) */
+  /** Clip format. */
   rendererType: ShrineRendererType;
   pack: string;
   idleClip: string;
@@ -38,19 +38,12 @@ export interface ShrineSurfacePayload {
 
 export function vesselConfigFromYaml(vessel: VesselConfig, pack: string): ShrineVesselConfig {
   const rendererType: ShrineRendererType =
-    vessel.type === 'component'
-      ? 'component'
-      : vessel.type === 'gif'
-        ? 'gif'
-        : vessel.type === 'webm' || vessel.type === 'mp4'
-          ? 'webm'
-          : 'lottie';
+    vessel.type === 'gif' ? 'gif' : vessel.type === 'webm' || vessel.type === 'mp4' ? 'webm' : 'lottie';
 
   return {
     rendererType,
     pack,
-    idleClip:
-      (vessel.type === 'component' ? vessel.fallback : vessel)?.expressions.idle ?? 'idle.json',
+    idleClip: vessel.expressions.idle ?? 'idle.json',
     crossfadeMs: vessel.transitions.duration_ms,
     idleLoops: vessel.playback.idle_loops,
     approvalIdleMs: vessel.playback.approval_idle_ms ?? 3000,

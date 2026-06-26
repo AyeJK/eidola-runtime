@@ -28,11 +28,11 @@ vessels/{pack}/
 
 | Phase | Shrine playback | Forge authoring | Notes |
 |-------|-----------------|-----------------|-------|
-| **1–2** | **Lottie + component (Three.js)** | — | MCP → Shrine loop. A component pack (e.g. a registered `*-threejs` renderer) can be used with Lottie fallback. |
-| **3** | **Lottie + WebM + component** | Lottie + WebM import **or** component pack selection | WebM playback and clip import ship together. Forge selects registered Three.js packs — no custom shader authoring. |
-| **8** | Lottie + WebM + component | + AI-generated WebM | Bookended WebM pipeline builds on Phase 3 clip path. Component packs unchanged. |
+| **1–2** | **Lottie** | — | MCP → Shrine loop. |
+| **3** | **Lottie + WebM** | Lottie + WebM import | WebM playback and clip import ship together. |
+| **8** | Lottie + WebM | + AI-generated WebM | Bookended WebM pipeline builds on Phase 3 clip path. |
 
-`vessel.yaml` `type` field declares the pack format: `"lottie"`, `"webm"`, or `"component"`. Shrine refuses to load a pack whose `type` exceeds current runtime support (e.g. WebM pack on Phase 1 Shrine → fall back to idle, log only).
+`vessel.yaml` `type` field declares the pack format: `"lottie"`, `"webm"`, `"mp4"`, or `"gif"`. Shrine refuses to load a pack whose `type` exceeds current runtime support (e.g. WebM pack on Phase 1 Shrine → fall back to idle, log only).
 
 ---
 
@@ -58,14 +58,15 @@ Unversioned. Parsed by MCP server and overlay.
 
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
-| `type` | yes | `"lottie"` \| `"webm"` \| `"component"` | Clip format or component renderer. `"lottie"` in Phase 1–2; `"webm"` from Phase 3; `"component"` for Three.js packs (states managed inside the pack). |
-| `pack` | yes | string | Vessel pack id → `vessels/{pack}/`. For `component`, resolves to a registered renderer module, not clip files. |
-| `expressions` | yes* | object | Maps state name → clip filename (`.json` for Lottie, `.webm` for WebM). *Omitted for `type: component` — expressions are internal to the pack. |
-| `fallback` | no | object | **Component type only.** Lottie or WebM pack used when Shrine cannot mount the component renderer. Same shape as a clip-type vessel block. |
+| `type` | yes | `"lottie"` \| `"webm"` \| `"mp4"` \| `"gif"` | Clip format. `"lottie"` in Phase 1–2; `"webm"`/`"mp4"`/`"gif"` from Phase 3. |
+| `pack` | yes | string | Vessel pack id → `vessels/{pack}/`. |
+| `expressions` | yes | object | Maps state name → clip filename (`.json` for Lottie, `.webm`/`.mp4`/`.gif` otherwise). |
 | `transitions.default` | no | `"crossfade"` \| `"cut"` | Default transition between clips. Default: `crossfade`. |
 | `transitions.duration_ms` | no | number | Crossfade duration. Default: `300`. |
 | `playback.idle_loops` | no | boolean | Loop idle clip. Default: `true`. |
 | `playback.approval_idle_ms` | no | number | Mid-turn approval idle timer (ms). Overlay-only; used when gated-tool hooks go silent. Default: `3000`. |
+| `playback.success_hold_ms` | no | number | How long the overlay holds `success` before returning to idle. Overlay-only. Default: `3000`. |
+| `playback.min_hold_ms` | no | number | Minimum time a visual state must remain on screen before the next can play (see [animation-crossfade-tuning.md](./animation-crossfade-tuning.md)). Overlay-only. Default: `1000`. |
 
 ### Expression states
 
@@ -96,7 +97,7 @@ Runtime distinguishes **semantic state** (fine-grained hook output on the wire) 
 
 **Socket broadcast:** `state` remains semantic. Optional additive field `visual_state` carries the visual tier when it differs (see [`state-socket-protocol.md`](./state-socket-protocol.md)).
 
-**HUD (component packs):** Primary label from visual tier (`WORKING`, `THINKING`, …). Sub-label from `tool` when present (`Grep`, `Write`, `Shell`); otherwise semantic name when in the working cluster (e.g. `thinking` after `postToolUse`).
+**HUD:** State word from visual tier (`IDLE`, `WORKING`, `THINKING`, …), a rotating flavor-phrase subtitle per tier (`pickShrineHudSubtitle`, e.g. `idle` → "still here"), and a separate tool-name badge (`toolHudLabel`, e.g. `Grep` → "grepping") shown only when `tool` is present on the broadcast.
 
 **Clip resolution:** `resolveExpressionClip` maps working-cluster semantics to the `working` clip when no per-state clip exists. `searching` / `writing` clips are optional — they may alias to `working`.
 
@@ -111,23 +112,6 @@ Runtime distinguishes **semantic state** (fine-grained hook output on the wire) 
 ### Missing clip fallback
 
 If any expression file is missing, overlay plays `idle` and logs. No visible error.
-
-### `type: component` (Three.js packs)
-
-Component vessels delegate expression state to a registered renderer module under `vessels/{pack}/`. Shrine and MCP resolve `pack` to the pack id and mount the renderer — **no per-state clip files** in the Engram directory.
-
-| Field | Required | Notes |
-|-------|----------|-------|
-| `type` | yes | Must be `"component"`. |
-| `pack` | yes | Registered component pack id → renderer module in `vessels/{pack}/`. |
-| `expressions` | no | Omitted — state → pose mapping lives inside the pack. |
-| `states` | no | Informational list of states the pack supports; used by Forge preview and docs. |
-| `playback` | no | Same keys as clip types where applicable (`idle_loops`, `approval_idle_ms`). |
-| `fallback` | no | Clip-type block (`type: lottie` or `type: webm`) used when Shrine cannot mount WebGL. Same shape as a standalone clip vessel ( `pack`, `expressions`, `transitions`, `playback` ). |
-
-**Forge authoring (Phase 3):** Shapers pick a registered pack in The Forge; optional fallback maps Lottie or WebM clips for hosts without Three.js. Export sets `type`, `pack`, `states`, `playback`, and optionally `fallback` on `vessel.yaml`.
-
-**Runtime:** Shrine tries component renderer first; on mount failure, plays `fallback` clips with the same silent missing-clip rules as Lottie/WebM packs.
 
 ---
 

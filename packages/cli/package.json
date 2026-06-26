@@ -48,7 +48,6 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "js-yaml": "^4.1.0",
     "lottie-web": "^5.13.0",
-    "three": "^0.176.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

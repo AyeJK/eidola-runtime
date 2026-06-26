@@ -14,7 +14,7 @@ export interface EngramConfig {
   extensions: Record<string, unknown>;
 }
 
-export type VesselType = 'lottie' | 'webm' | 'mp4' | 'gif' | 'component';
+export type VesselType = 'lottie' | 'webm' | 'mp4' | 'gif';
 
 export interface VesselTransitions {
   default: 'crossfade' | 'cut';
@@ -27,22 +27,17 @@ export interface VesselPlayback {
   approval_idle_ms?: number;
   /** How long overlay holds `success` before returning to idle. Overlay-only; default 3000. */
   success_hold_ms?: number;
-  /** Minimum time a visual state must remain on screen before the next can play. Overlay-only; default 500. */
+  /** Minimum time a visual state must remain on screen before the next can play. Overlay-only; default 1000. */
   min_hold_ms?: number;
 }
 
 export interface VesselConfig {
   type: VesselType;
   pack: string;
-  /** Expression map — required for lottie/webm, omitted for component renderers */
+  /** Expression map — required for all vessel types. */
   expressions: Record<string, string>;
   transitions: VesselTransitions;
   playback: VesselPlayback;
-  /**
-   * Lottie fallback for overlays that don't support component renderers.
-   * Present when type === 'component'.
-   */
-  fallback?: Omit<VesselConfig, 'fallback'>;
 }
 
 export interface LoadedEngram {
