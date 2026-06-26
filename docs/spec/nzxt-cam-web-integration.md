@@ -74,5 +74,3 @@ Beta CAM uses `nzxt-cam-beta://` and `cam-beta-redirect.nzxt.com`.
 
 - [NZXT Development docs](https://developer.nzxt.com/docs/development/)
 - [@nzxt/web-integrations-types](https://www.npmjs.com/package/@nzxt/web-integrations-types)
-- Legacy research: `docs/archive/Planning/Kraken Shrine Build Plan.txt`
-- Setup guide: `docs/kraken-shrine-setup.md`

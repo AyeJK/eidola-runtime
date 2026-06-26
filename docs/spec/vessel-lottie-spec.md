@@ -12,7 +12,7 @@ vessels/{pack-id}/
   thinking.json
   …                     # one file per vessel.yaml expressions key
   tools/
-    gif-to-lottie.mjs   # optional — Camina legacy conversion
+    gif-to-lottie.mjs   # optional — GIF-to-Lottie conversion
     validate-pack.mjs
     audit-gifs.mjs
 ```
@@ -66,7 +66,7 @@ For hand-authored or code-generated vector faces:
 | Brow | `brow_l`, `brow_r` | Expression |
 | Mouth | `mouth` | Talk / react |
 
-Phase 1.1 Camina pack uses **raster GIF conversion** — layer naming optional until vector rigs ship.
+Raster GIF-to-Lottie conversion (the Phase 1.1 path) does not need layer naming — it's only relevant once vector rigs ship.
 
 ---
 

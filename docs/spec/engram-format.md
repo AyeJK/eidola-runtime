@@ -96,7 +96,7 @@ Runtime distinguishes **semantic state** (fine-grained hook output on the wire) 
 
 **Socket broadcast:** `state` remains semantic. Optional additive field `visual_state` carries the visual tier when it differs (see [`state-socket-protocol.md`](./state-socket-protocol.md)).
 
-**HUD (Camina V3 / component packs):** Primary label from visual tier (`WORKING`, `THINKING`, …). Sub-label from `tool` when present (`Grep`, `Write`, `Shell`); otherwise semantic name when in the working cluster (e.g. `thinking` after `postToolUse`).
+**HUD (component packs):** Primary label from visual tier (`WORKING`, `THINKING`, …). Sub-label from `tool` when present (`Grep`, `Write`, `Shell`); otherwise semantic name when in the working cluster (e.g. `thinking` after `postToolUse`).
 
 **Clip resolution:** `resolveExpressionClip` maps working-cluster semantics to the `working` clip when no per-state clip exists. `searching` / `writing` clips are optional — they may alias to `working`.
 

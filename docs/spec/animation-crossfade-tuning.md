@@ -17,7 +17,7 @@ The goal is **smooth and fun**, not strict 1:1 accuracy between hook state and d
 
 ## Mechanism
 
-Both fixes live in `VesselPlayer` ([packages/shrine/src/renderer/vessel-player.ts](../../eidola-repo/packages/shrine/src/renderer/vessel-player.ts)), independent of hook/state logic.
+Both fixes live in `VesselPlayer` ([packages/shrine/src/renderer/vessel-player.ts](../../packages/shrine/src/renderer/vessel-player.ts)), independent of hook/state logic.
 
 ### Min-hold
 
@@ -41,7 +41,7 @@ Two stacked layers (`layerA` / `layerB`) ping-pong as active/incoming on every c
 
 | Setting | Value | Source of truth |
 |---|---|---|
-| `minHoldMs` | **1000ms** | engram default in [parse.ts](../../eidola-repo/packages/mcp/src/engram/parse.ts) (`min_hold_ms` field), propagated through [types.ts](../../eidola-repo/packages/shrine/src/shared/types.ts) `vesselConfigFromYaml`, renderer pre-config default in [main.ts](../../eidola-repo/packages/shrine/src/renderer/main.ts) `DEFAULT_CONFIG`, and `VesselPlayer`'s initial field |
+| `minHoldMs` | **1000ms** | engram default in [parse.ts](../../packages/cli/src/engram/parse.ts) (`min_hold_ms` field), propagated through [types.ts](../../packages/shrine/src/shared/types.ts) `vesselConfigFromYaml`, renderer pre-config default in [main.ts](../../packages/shrine/src/renderer/main.ts) `DEFAULT_CONFIG`, and `VesselPlayer`'s initial field |
 | `crossfadeMs` | 300ms | `vessel.transitions.duration_ms` in an Engram's `vessel.yaml`, same propagation path |
 
 Per-Engram overrides: author a `playback.min_hold_ms` (and `transitions.duration_ms`) in `vessel.yaml` — see [engram-format.md](engram-format.md). Omitting either falls back to the defaults above.

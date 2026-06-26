@@ -24,7 +24,7 @@ Runtime layer    engram.yaml + vessel.yaml  →  load_eidolon / auto-activate  �
 
 ## Compile pipeline
 
-Shared utility: `compileSoulToCursorRule()` in `packages/mcp/src/cursor/`.
+Shared utility: `compileSoulToCursorRule()` in `packages/cli/src/cursor/`.
 
 **Inputs:**
 - `SOUL.md` — pure soul.md prose, no frontmatter
@@ -69,7 +69,7 @@ Written by `pnpm link-engram`. Read by MCP on startup (Sprint 1.2.2) for auto ve
 ```json
 {
   "active_engram_id": "example-engram",
-  "engrams_dir": "C:/path/to/eidola-repo/engrams",
+  "engrams_dir": "C:/path/to/workspace/engrams",
   "soul_hash": "a1b2c3...",
   "compiled_at": "2026-06-12T10:00:00.000Z"
 }
@@ -120,7 +120,7 @@ The Shrine does **not** open automatically. Shapers launch it explicitly:
 
 Surface preset: `shrine_surface` in `eidola.json`, or `EIDOLA_SHRINE_SURFACE` / `EIDOLA_SHRINE_WIDTH` + `EIDOLA_SHRINE_HEIGHT`. Monitor index: `EIDOLA_SHRINE_DISPLAY`.
 
-Idempotent — returns `already_running` if the window is open. Requires built Shrine (`pnpm build` in `eidola-repo`).
+Idempotent — returns `already_running` if the window is open. Requires built Shrine (`pnpm build` in `eidola-runtime`).
 
 ---
 
@@ -164,5 +164,3 @@ The Forge **Install as Cursor rule (always on)** toggle will call the same `comp
 ## Related specs
 
 - Engram format: [`engram-format.md`](./engram-format.md)
-- Rebuild architecture: [`../eidola-rebuild-plan.md`](../eidola-rebuild-plan.md)
-- Phase plan: [`../Phases/Phase-1.2-Cursor-Soul-Integration.md`](../Phases/Phase-1.2-Cursor-Soul-Integration.md)
