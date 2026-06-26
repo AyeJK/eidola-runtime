@@ -5,8 +5,8 @@
   "type": "module",
   "description": "Eidola runtime monorepo — MCP server/CLI, hook relays, Shrine, tool-state, and the Engram spec. Public, MIT.",
   "scripts": {
-    "build": "pnpm -r --sort run build",
-    "check": "pnpm --filter @eidola/tool-state run build && pnpm -r run check",
+    "build": "pnpm --filter @eidola/tool-state --filter @eidola/cursor-hooks --filter @eidola/claude-hooks --filter eidola-state-bridge --sort run build && pnpm --filter @eidola/cli run build && pnpm --filter @eidola/shrine run build",
+    "check": "pnpm --filter @eidola/tool-state --filter @eidola/cursor-hooks --filter @eidola/claude-hooks --filter eidola-state-bridge --sort run check && pnpm --filter @eidola/cli run check && pnpm --filter @eidola/shrine run check",
     "test": "pnpm -r run test"
   },
   "engines": {
