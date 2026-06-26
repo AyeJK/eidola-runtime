@@ -82,21 +82,7 @@ A clip **passes** when:
 
 ---
 
-## Regeneration (Camina)
-
-From `eidola-repo` root:
-
-```bash
-node vessels/camina-v1/tools/gif-to-lottie.mjs --all
-node vessels/camina-v1/tools/validate-pack.mjs
-```
-
-Source GIFs: `eidola-repo-old/packs/camina/` (legacy art reference).
-
----
-
 ## References
 
-- `docs/spec/engram-format.md` — expression keys and lineage table
-- `vessels/camina-v1/tools/FALLBACK.md` — code-gen fallback if conversion fails QA
+- `docs/spec/engram-format.md` — expression keys
 - `docs/Design/design-system.md` — Vessel states list

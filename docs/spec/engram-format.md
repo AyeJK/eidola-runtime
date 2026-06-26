@@ -2,7 +2,7 @@
 
 _Last updated: 2026-06-24_
 
-An Engram is a directory containing three files. Canonical demo: `docs/spec/engrams/camina-drummer/`.
+An Engram is a directory containing three files.
 
 ```
 engrams/{id}/
@@ -28,7 +28,7 @@ vessels/{pack}/
 
 | Phase | Shrine playback | Forge authoring | Notes |
 |-------|-----------------|-----------------|-------|
-| **1–2** | **Lottie + component (Three.js)** | — | MCP → Shrine loop. Camina uses `camina-v3-threejs` component renderer with Lottie fallback. |
+| **1–2** | **Lottie + component (Three.js)** | — | MCP → Shrine loop. A component pack (e.g. a registered `*-threejs` renderer) can be used with Lottie fallback. |
 | **3** | **Lottie + WebM + component** | Lottie + WebM import **or** component pack selection | WebM playback and clip import ship together. Forge selects registered Three.js packs — no custom shader authoring. |
 | **8** | Lottie + WebM + component | + AI-generated WebM | Bookended WebM pipeline builds on Phase 3 clip path. Component packs unchanged. |
 
@@ -114,7 +114,7 @@ If any expression file is missing, overlay plays `idle` and logs. No visible err
 
 ### `type: component` (Three.js packs)
 
-Component vessels delegate expression state to a registered renderer module under `vessels/{pack}/`. Shrine and MCP resolve `pack` to the pack id (e.g. `camina-v3-threejs`) and mount the renderer — **no per-state clip files** in the Engram directory.
+Component vessels delegate expression state to a registered renderer module under `vessels/{pack}/`. Shrine and MCP resolve `pack` to the pack id and mount the renderer — **no per-state clip files** in the Engram directory.
 
 | Field | Required | Notes |
 |-------|----------|-------|
@@ -125,30 +125,9 @@ Component vessels delegate expression state to a registered renderer module unde
 | `playback` | no | Same keys as clip types where applicable (`idle_loops`, `approval_idle_ms`). |
 | `fallback` | no | Clip-type block (`type: lottie` or `type: webm`) used when Shrine cannot mount WebGL. Same shape as a standalone clip vessel ( `pack`, `expressions`, `transitions`, `playback` ). |
 
-**Forge authoring (Phase 3):** Shapers pick a registered pack in The Forge; optional fallback maps Lottie or WebM clips for hosts without Three.js. Export matches `docs/spec/engrams/camina-drummer/vessel.yaml` — `type`, `pack`, `states`, `playback`, optional `fallback`.
+**Forge authoring (Phase 3):** Shapers pick a registered pack in The Forge; optional fallback maps Lottie or WebM clips for hosts without Three.js. Export sets `type`, `pack`, `states`, `playback`, and optionally `fallback` on `vessel.yaml`.
 
 **Runtime:** Shrine tries component renderer first; on mount failure, plays `fallback` clips with the same silent missing-clip rules as Lottie/WebM packs.
-
----
-
-## Camina Drummer — legacy asset lineage
-
-Clips for `vessels/camina-v1/` are **Lottie JSON** converted from the legacy GIF pack (Phase 1.1). Authoring rules: [`vessel-lottie-spec.md`](./vessel-lottie-spec.md). Source GIFs: `eidola-repo-old/packs/camina/`. Regenerate with `node vessels/camina-v1/tools/gif-to-lottie.mjs --all`.
-
-| Expression | Legacy source | Phase 1 clip |
-|------------|---------------|--------------|
-| `idle` | `idle.gif`, `idle_alt.gif` | `idle.json` — seamless loop |
-| `thinking` | `thinking.gif` | `thinking.json` |
-| `working` | `debug.gif` | `working.json` |
-| `searching` | *(new)* | `searching.json` — derived from `thinking.gif` (cool tint) |
-| `writing` | `shipit.gif` | `writing.json` |
-| `responding` | `result.gif` | `responding.json` |
-| `error` | `confused.gif` | `error.json` |
-| `attention` | `warn.gif` | `attention.json` |
-
-Shapers may convert Lottie packs to WebM in Phase 3 via Forge export, or select a registered Three.js component pack (`camina-v3-threejs`). Phase 8 AI generation targets WebM bookended clips for new clip-based packs.
-
-`celebrate` and `error` from the old pack are deferred — content-triggered expressions belong in Phase 6 (EmotionClassifier), not Phase 1 socket states.
 
 ---
 

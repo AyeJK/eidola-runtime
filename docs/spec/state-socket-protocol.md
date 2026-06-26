@@ -58,7 +58,7 @@ Emitted after inbound events are normalized and mapped through the active Engram
   "protocol_version": "1.0",
   "ts": 1749600000000,
   "state": "thinking",
-  "engram_id": "camina-drummer",
+  "engram_id": "example-engram",
   "expression": "thinking.json"
 }
 ```
@@ -81,7 +81,7 @@ Emitted after inbound events are normalized and mapped through the active Engram
   "ts": 1749600000000,
   "state": "searching",
   "visual_state": "working",
-  "engram_id": "camina-drummer",
+  "engram_id": "example-engram",
   "expression": "working.json",
   "tool": "Grep"
 }

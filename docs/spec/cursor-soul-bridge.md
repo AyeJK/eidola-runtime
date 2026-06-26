@@ -47,7 +47,7 @@ Cursor rule format — YAML frontmatter delimited by `---`:
 ```yaml
 ---
 alwaysApply: true
-description: "Camina Drummer"
+description: "Example Engram"
 ---
 ```
 
@@ -68,7 +68,7 @@ Written by `pnpm link-engram`. Read by MCP on startup (Sprint 1.2.2) for auto ve
 
 ```json
 {
-  "active_engram_id": "camina-drummer",
+  "active_engram_id": "example-engram",
   "engrams_dir": "C:/path/to/eidola-repo/engrams",
   "soul_hash": "a1b2c3...",
   "compiled_at": "2026-06-12T10:00:00.000Z"
@@ -95,7 +95,7 @@ Written by `pnpm link-engram`. Read by MCP on startup (Sprint 1.2.2) for auto ve
 Run from the **Cursor workspace root** (where `.cursor/` lives):
 
 ```bash
-pnpm link-engram camina-drummer
+pnpm link-engram example-engram
 ```
 
 **Steps performed:**
@@ -133,7 +133,7 @@ When SOUL.md changes after compile, the workspace rule drifts from the Engram so
 **Behavior:** `warnIfStaleSoulCompile()` writes a warning to **stderr only** — no modal, no MCP startup block:
 
 ```
-[eidola] Stale Cursor rule: SOUL.md changed since last compile (hash mismatch). Re-run: pnpm link-engram camina-drummer
+[eidola] Stale Cursor rule: SOUL.md changed since last compile (hash mismatch). Re-run: pnpm link-engram example-engram
 ```
 
 **Call sites:**
