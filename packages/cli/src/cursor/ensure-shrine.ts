@@ -114,7 +114,7 @@ async function shrineHttpBuildReady(appRoot: string): Promise<boolean> {
 
 /**
  * Spawn Shrine — HTTP server for browser-based display surfaces.
- * Invoked via MCP `launch_shrine` or `pnpm ensure:shrine`.
+ * Invoked via MCP `launch_shrine` or `eidola launch shrine`.
  */
 export async function launchShrine(
   config: EidolaRuntimeConfig,

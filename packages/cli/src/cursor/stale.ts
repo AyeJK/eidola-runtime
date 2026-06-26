@@ -29,7 +29,7 @@ export async function warnIfStaleSoulCompile(check: StaleSoulCompileCheck): Prom
   if (storedHash && storedHash !== currentHash) {
     const engramId = check.workspaceConfig?.active_engram_id ?? 'unknown';
     console.error(
-      `[eidola] Stale Cursor rule: SOUL.md changed since last compile (hash mismatch). Re-run: pnpm link-engram ${engramId}`,
+      `[eidola] Stale Cursor rule: SOUL.md changed since last compile (hash mismatch). Re-run: eidola link-engram ${engramId}`,
     );
     return true;
   }
@@ -47,7 +47,7 @@ export async function warnIfStaleSoulCompile(check: StaleSoulCompileCheck): Prom
   if (compiledBodyHash !== currentHash) {
     const engramId = check.workspaceConfig?.active_engram_id ?? 'unknown';
     console.error(
-      `[eidola] Stale Cursor rule: compiled .mdc body does not match SOUL.md. Re-run: pnpm link-engram ${engramId}`,
+      `[eidola] Stale Cursor rule: compiled .mdc body does not match SOUL.md. Re-run: eidola link-engram ${engramId}`,
     );
     return true;
   }

@@ -138,10 +138,10 @@ When an Engram is linked to a Cursor workspace, Soul delivery shifts from MCP in
 | Concern | Cursor (linked workspace) | Other hosts |
 |---------|----------------------------|-------------|
 | Soul source | `SOUL.md` (canonical) | `SOUL.md` (canonical) |
-| Delivery | `.cursor/rules/{id}.mdc` via `pnpm link-engram` | MCP `<system-reminder>` via `load_eidolon` |
-| Vessel | MCP auto-activation / `load_eidolon` | MCP `load_eidolon` |
+| Delivery | `.cursor/rules/{id}.mdc` via `eidola link-engram` | MCP `<system-reminder>` via `awaken` |
+| Vessel | MCP auto-activation / `awaken` | MCP `awaken` |
 
-**Workflow:** Shaper runs `pnpm link-engram {id}` from workspace root. Writes `.cursor/rules/{id}.mdc` and `.cursor/eidola.json`. Re-run after SOUL.md edits.
+**Workflow:** Shaper runs `eidola link-engram {id}` from workspace root. Writes `.cursor/rules/{id}.mdc` and `.cursor/eidola.json`. Re-run after SOUL.md edits.
 
 **Stale detection:** SHA-256 hash of SOUL.md stored in `eidola.json` `soul_hash`. MCP warns on stderr when hash mismatches — does not block startup.
 

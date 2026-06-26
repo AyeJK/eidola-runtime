@@ -10,13 +10,13 @@ The Cursor Soul bridge connects portable Engram Soul prose to Cursor's always-on
 
 ```
 Identity layer   SOUL.md  →  compile  →  .cursor/rules/{id}.mdc  (always on)
-Runtime layer    engram.yaml + vessel.yaml  →  load_eidolon / auto-activate  →  Shrine Vessel
+Runtime layer    engram.yaml + vessel.yaml  →  awaken / auto-activate  →  Shrine Vessel
 ```
 
 | Layer | Source | Cursor delivery | Purpose |
 |-------|--------|-----------------|---------|
 | **Identity** | `SOUL.md` | Compiled `.mdc` rule | Persona voice, tone, rules — persists across chats |
-| **Runtime** | `engram.yaml`, `vessel.yaml` | MCP `load_eidolon` / auto-activation | Vessel pack binding, expression map, reinject fallback |
+| **Runtime** | `engram.yaml`, `vessel.yaml` | MCP `awaken` / auto-activation | Vessel pack binding, expression map, reinject fallback |
 
 **One workspace per Engram.** Each Cursor workspace gets a single `alwaysApply: true` Soul rule. Multi-Engram switching within one workspace is out of scope.
 
@@ -35,7 +35,7 @@ Shared utility: `compileSoulToCursorRule()` in `packages/cli/src/cursor/`.
 **Rules:**
 1. Soul body is **byte-for-byte** the normalized SOUL.md content (LF line endings).
 2. No YAML, engram metadata, or vessel config appears in the rule body.
-3. Frontmatter is machine-generated only — Shapers regenerate via `pnpm link-engram` or Forge export (Phase 3).
+3. Frontmatter is machine-generated only — Shapers regenerate via `eidola link-engram` or Forge export (Phase 3).
 4. Rule filename: `{engram-id}.mdc` under `.cursor/rules/`.
 
 ---
@@ -64,7 +64,7 @@ Everything after the closing `---` is SOUL.md verbatim.
 
 ## Workspace config — `.cursor/eidola.json`
 
-Written by `pnpm link-engram`. Read by MCP on startup (Sprint 1.2.2) for auto vessel activation.
+Written by `eidola link-engram`. Read by MCP on startup (Sprint 1.2.2) for auto vessel activation.
 
 ```json
 {
@@ -81,7 +81,7 @@ Written by `pnpm link-engram`. Read by MCP on startup (Sprint 1.2.2) for auto ve
 | `engrams_dir` | no | string | Override for Engram root. Default: `{EIDOLA_ROOT}/engrams` |
 | `soul_hash` | yes | string | SHA-256 hex of normalized SOUL.md at last compile |
 | `compiled_at` | yes | string | ISO-8601 timestamp of last successful compile |
-| `shrine_surface` | no | string | Shrine display preset (`ultrawide-4-1`, `square-1-1`, `widescreen-16-9`) or custom `WxH`. Default `ultrawide-4-1` |
+| `shrine_surface` | no | string | Shrine display preset (`browser`, `kraken-elite-v2`) or custom `WxH`. Default `browser` |
 
 **Resolution order for `engrams_dir`:**
 1. Value in `eidola.json` (if present)
@@ -90,12 +90,12 @@ Written by `pnpm link-engram`. Read by MCP on startup (Sprint 1.2.2) for auto ve
 
 ---
 
-## Shaper workflow — `pnpm link-engram`
+## Shaper workflow — `eidola link-engram`
 
 Run from the **Cursor workspace root** (where `.cursor/` lives):
 
 ```bash
-pnpm link-engram example-engram
+eidola link-engram example-engram
 ```
 
 **Steps performed:**
@@ -116,9 +116,9 @@ The Shrine does **not** open automatically. Shapers launch it explicitly:
 | Method | When |
 |--------|------|
 | **MCP `launch_shrine`** | Ask the agent in chat — e.g. "Launch the shrine" |
-| **`pnpm ensure:shrine`** | Terminal fallback (same launcher) |
+| **`eidola launch shrine`** | Terminal fallback (same launcher) |
 
-Surface preset: `shrine_surface` in `eidola.json`, or `EIDOLA_SHRINE_SURFACE` / `EIDOLA_SHRINE_WIDTH` + `EIDOLA_SHRINE_HEIGHT`. Monitor index: `EIDOLA_SHRINE_DISPLAY`.
+Surface preset: `shrine_surface` in `eidola.json`, or `EIDOLA_SHRINE_SURFACE` / `EIDOLA_SHRINE_WIDTH` + `EIDOLA_SHRINE_HEIGHT`.
 
 Idempotent — returns `already_running` if the window is open. Requires built Shrine (`pnpm build` in `eidola-runtime`).
 
@@ -133,7 +133,7 @@ When SOUL.md changes after compile, the workspace rule drifts from the Engram so
 **Behavior:** `warnIfStaleSoulCompile()` writes a warning to **stderr only** — no modal, no MCP startup block:
 
 ```
-[eidola] Stale Cursor rule: SOUL.md changed since last compile (hash mismatch). Re-run: pnpm link-engram example-engram
+[eidola] Stale Cursor rule: SOUL.md changed since last compile (hash mismatch). Re-run: eidola link-engram example-engram
 ```
 
 **Call sites:**
@@ -142,16 +142,16 @@ When SOUL.md changes after compile, the workspace rule drifts from the Engram so
 
 ---
 
-## `load_eidolon` role (narrowed)
+## `awaken` role (narrowed)
 
 In Cursor with a linked workspace:
 
 | Concern | Primary path | Fallback |
 |---------|--------------|----------|
 | Personality | Compiled `.mdc` rule | MCP Soul `<system-reminder>` injection |
-| Vessel | MCP auto-activation / `load_eidolon` | Manual `load_eidolon` chat step |
+| Vessel | MCP auto-activation / `awaken` | Manual `awaken` chat step |
 
-`load_eidolon` always binds the Vessel pack and broadcasts idle. Soul injection runs only when no matching Cursor rule is detected (Sprint 1.2.2).
+`awaken` always binds the Vessel pack and broadcasts idle. Soul injection runs only when no matching Cursor rule is detected (Sprint 1.2.2).
 
 ---
 

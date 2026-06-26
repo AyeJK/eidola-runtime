@@ -56,7 +56,6 @@ State events arrive via the existing MCP state socket (`127.0.0.1:9742`). The HT
 
 - 640×640 viewport
 - Circular mask (`clip-path: circle(50%)`)
-- Three.js **square** layout tier (same as `square-1-1`)
 
 Electron monitor mode and CAM HTTP mode coexist — preset selects deployment path.
 
