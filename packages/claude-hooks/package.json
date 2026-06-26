@@ -1,0 +1,27 @@
+{
+  "name": "@eidola/claude-hooks",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Claude Code hooks → Eidola state socket relay (surface: claude-code).",
+  "license": "MIT",
+  "bin": {
+    "eidola-claude-relay": "dist/relay.js"
+  },
+  "files": ["dist", "templates"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "pnpm run build && vitest run",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@eidola/tool-state": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [{ "command": "__RELAY__ sessionStart" }],
+    "sessionEnd": [{ "command": "__RELAY__ sessionEnd" }],
+    "beforeSubmitPrompt": [{ "command": "__RELAY__ beforeSubmitPrompt" }],
+    "afterAgentThought": [{ "command": "__RELAY__ afterAgentThought" }],
+    "preToolUse": [{ "command": "__RELAY__ preToolUse" }],
+    "beforeShellExecution": [{ "command": "__RELAY__ beforeShellExecution" }],
+    "beforeMCPExecution": [{ "command": "__RELAY__ beforeMCPExecution" }],
+    "beforeReadFile": [{ "command": "__RELAY__ beforeReadFile" }],
+    "afterFileEdit": [{ "command": "__RELAY__ afterFileEdit" }],
+    "subagentStart": [{ "command": "__RELAY__ subagentStart" }],
+    "subagentStop": [{ "command": "__RELAY__ subagentStop" }],
+    "preCompact": [{ "command": "__RELAY__ preCompact" }],
+    "postToolUse": [{ "command": "__RELAY__ postToolUse" }],
+    "postToolUseFailure": [{ "command": "__RELAY__ postToolUseFailure" }],
+    "afterAgentResponse": [{ "command": "__RELAY__ afterAgentResponse" }],
+    "stop": [{ "command": "__RELAY__ stop" }]
+  }
+}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:;"
+    />
+    <title>Eidola Shrine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@500;600;700&family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  <body>
+    <div class="shrine-setup" data-shrine-setup></div>
+    <div class="shrine-root hidden" data-shrine-vessel>
+      <div class="shrine-cursor-link-banner hidden" data-cursor-link-banner role="status"></div>
+      <div class="vessel-stage">
+        <div class="vessel-layers">
+          <div class="vessel-layer vessel-layer-a"></div>
+          <div class="vessel-layer vessel-layer-b"></div>
+        </div>
+        <div class="shrine-hud" data-shrine-hud aria-hidden="true">
+          <span class="shrine-hud-corner shrine-hud-corner--tl"></span>
+          <span class="shrine-hud-corner shrine-hud-corner--tr"></span>
+          <span class="shrine-hud-corner shrine-hud-corner--bl"></span>
+          <span class="shrine-hud-corner shrine-hud-corner--br"></span>
+          <div class="shrine-hud-state" data-shrine-hud-state>
+            <span class="shrine-hud-state-word" data-shrine-hud-state-word>idle</span>
+            <span class="shrine-hud-state-sub" data-shrine-hud-state-sub>standing by</span>
+          </div>
+          <div class="shrine-hud-tool hidden" data-shrine-hud-tool>
+            <span class="shrine-hud-tool-label" data-shrine-hud-tool-label></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

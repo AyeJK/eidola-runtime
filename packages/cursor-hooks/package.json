@@ -1,0 +1,27 @@
+{
+  "name": "@eidola/cursor-hooks",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Cursor agent hooks → Eidola state socket relay (surface: cursor).",
+  "license": "MIT",
+  "bin": {
+    "eidola-cursor-relay": "dist/relay.js"
+  },
+  "files": ["dist", "templates"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "pnpm run build && vitest run",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@eidola/tool-state": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

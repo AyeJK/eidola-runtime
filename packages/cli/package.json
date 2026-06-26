@@ -1,0 +1,62 @@
+{
+  "name": "@eidola/cli",
+  "version": "0.3.22",
+  "type": "module",
+  "description": "Portable AI personality runtime — MCP server, Shrine display, and reactive Vessel control (requires eidola setup-hooks).",
+  "license": "MIT",
+  "keywords": [
+    "eidola",
+    "mcp",
+    "ai-persona",
+    "avatar",
+    "engram",
+    "vessel",
+    "model-context-protocol",
+    "cursor"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "eidola": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node scripts/prepare-dist.mjs",
+    "build:tsc": "tsc -p tsconfig.json",
+    "check": "pnpm run build && vitest run",
+    "dev": "tsc -p tsconfig.json --watch",
+    "prepublishOnly": "pnpm run build",
+    "test": "vitest run",
+    "test:release-bundle": "vitest run src/cursor/auto-activate.test.ts src/cursor/link-engram.test.ts src/integration/release-bundle-socket.release-bundle.test.ts src/watch/mcp-awaken.release-bundle.test.ts -t \"release-bundle:\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "js-yaml": "^4.1.0",
+    "lottie-web": "^5.13.0",
+    "three": "^0.176.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eidola/shrine": "workspace:*",
+    "@eidola/tool-state": "workspace:*",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.15.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "PreToolUse": [
+    {
+      "matcher": "",
+      "hooks": [{ "type": "command", "command": "__RELAY__ PreToolUse" }]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "",
+      "hooks": [{ "type": "command", "command": "__RELAY__ PostToolUse" }]
+    }
+  ],
+  "PostToolUseFailure": [
+    {
+      "matcher": "",
+      "hooks": [{ "type": "command", "command": "__RELAY__ PostToolUseFailure" }]
+    }
+  ],
+  "UserPromptSubmit": [
+    {
+      "hooks": [{ "type": "command", "command": "__RELAY__ UserPromptSubmit" }]
+    }
+  ],
+  "Notification": [
+    {
+      "hooks": [{ "type": "command", "command": "__RELAY__ Notification" }]
+    }
+  ],
+  "PermissionRequest": [
+    {
+      "hooks": [{ "type": "command", "command": "__RELAY__ PermissionRequest" }]
+    }
+  ],
+  "SubagentStart": [
+    {
+      "hooks": [{ "type": "command", "command": "__RELAY__ SubagentStart" }]
+    }
+  ],
+  "SubagentStop": [
+    {
+      "hooks": [{ "type": "command", "command": "__RELAY__ SubagentStop" }]
+    }
+  ],
+  "PreCompact": [
+    {
+      "hooks": [{ "type": "command", "command": "__RELAY__ PreCompact" }]
+    }
+  ],
+  "Stop": [
+    {
+      "hooks": [{ "type": "command", "command": "__RELAY__ Stop" }]
+    }
+  ],
+  "SessionStart": [
+    {
+      "hooks": [{ "type": "command", "command": "__RELAY__ SessionStart" }]
+    }
+  ],
+  "SessionEnd": [
+    {
+      "hooks": [{ "type": "command", "command": "__RELAY__ SessionEnd" }]
+    }
+  ]
+}

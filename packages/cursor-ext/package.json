@@ -1,0 +1,28 @@
+{
+  "name": "eidola-state-bridge",
+  "version": "0.2.0",
+  "private": true,
+  "license": "MIT",
+  "displayName": "Eidola State Bridge",
+  "description": "Maps Cursor model activity to Eidola state socket events for reactive Vessels.",
+  "publisher": "eidola",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "contributes": {},
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit -p tsconfig.json && vitest run",
+    "test": "vitest run",
+    "watch": "tsc -p tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/vscode": "^1.96.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

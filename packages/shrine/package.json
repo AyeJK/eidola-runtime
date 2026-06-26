@@ -1,0 +1,32 @@
+{
+  "name": "@eidola/shrine",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Eidola Shrine — browser HTTP server runtime with reactive Vessel.",
+  "license": "MIT",
+  "main": "dist/server/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.server.json && vite build && node scripts/prepare-dist.mjs",
+    "check": "tsc --noEmit -p tsconfig.server.json && tsc --noEmit -p tsconfig.renderer.json && vitest run",
+    "dev": "pnpm run build && node dist/server/index.js",
+    "dev:kill": "node scripts/kill-dev.mjs",
+    "start": "node dist/server/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@eidola/cli": "workspace:*",
+    "@eidola/tool-state": "workspace:*",
+    "lottie-web": "^5.13.0",
+    "three": "^0.176.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/three": "^0.176.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.5",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "@eidola/tool-state",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Shared Cursor/Claude tool name → vessel state mapping.",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./workspace-registry": {
+      "types": "./dist/workspace-registry.d.ts",
+      "import": "./dist/workspace-registry.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit -p tsconfig.json && vitest run",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
