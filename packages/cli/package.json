@@ -4,6 +4,9 @@
   "type": "module",
   "description": "Portable AI personality runtime — MCP server, Shrine display, and reactive Vessel control (requires eidola setup-hooks).",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "eidola",
     "mcp",

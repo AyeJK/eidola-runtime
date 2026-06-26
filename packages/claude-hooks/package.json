@@ -4,6 +4,9 @@
   "type": "module",
   "description": "Claude Code hooks → Eidola state socket relay (surface: claude-code).",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "eidola-claude-relay": "dist/relay.js"
   },

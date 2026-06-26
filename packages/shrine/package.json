@@ -4,6 +4,9 @@
   "type": "module",
   "description": "Eidola Shrine — browser HTTP server runtime with reactive Vessel.",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/server/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.server.json && vite build && node scripts/prepare-dist.mjs",

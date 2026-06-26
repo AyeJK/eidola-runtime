@@ -4,6 +4,9 @@
   "type": "module",
   "description": "Shared Cursor/Claude tool name → vessel state mapping.",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

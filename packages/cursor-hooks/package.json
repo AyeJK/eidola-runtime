@@ -4,6 +4,9 @@
   "type": "module",
   "description": "Cursor agent hooks → Eidola state socket relay (surface: cursor).",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "eidola-cursor-relay": "dist/relay.js"
   },
