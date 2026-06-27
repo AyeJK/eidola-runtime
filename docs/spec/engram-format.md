@@ -2,37 +2,32 @@
 
 _Last updated: 2026-06-24_
 
-An Engram is a directory containing three files.
+An Engram is a folder bundle: the Engram's three core files, plus its Vessel clips alongside, ready to install or share as-is. This is exactly what you get from a Forge export or a Directory download — unzip it and you have a complete, installable Engram:
 
 ```
-engrams/{id}/
+{id}/                # e.g. ponytail-engram/
   SOUL.md
   vessel.yaml
   engram.yaml
-```
-
-Vessel clips live in a separate pack directory:
-
-```
 vessels/{pack}/
-  idle.json       # Lottie (Phase 1–2)
+  idle.json           # e.g. Lottie
   thinking.json
   ...
+.cursor/
+  rules/{id}.mdc      # compiled Cursor rule
 ```
 
-`vessel.yaml` `pack` field resolves to `vessels/{pack}/`. Expression values are filenames relative to that directory.
+`vessel.yaml`'s `pack` field names the `{pack}` directory; expression values are filenames relative to it.
+
+A download also includes a short install README alongside the folders above. See [`personality-injection.md`](./personality-injection.md) for how `awaken` uses the bundled `.mdc` rule.
+
+To load and run an Engram, unzip it into your Eidola folder, launch the Shrine, and click Awaken — see [`cli-mcp-reference.md`](./cli-mcp-reference.md) for that flow and the chat-based MCP tools that mirror it.
 
 ---
 
-## Vessel format by phase
+## Vessel format
 
-| Phase | Shrine playback | Forge authoring | Notes |
-|-------|-----------------|-----------------|-------|
-| **1–2** | **Lottie** | — | MCP → Shrine loop. |
-| **3** | **Lottie + WebM** | Lottie + WebM import | WebM playback and clip import ship together. |
-| **8** | Lottie + WebM | + AI-generated WebM | Bookended WebM pipeline builds on Phase 3 clip path. |
-
-`vessel.yaml` `type` field declares the pack format: `"lottie"`, `"webm"`, `"mp4"`, or `"gif"`. Shrine refuses to load a pack whose `type` exceeds current runtime support (e.g. WebM pack on Phase 1 Shrine → fall back to idle, log only).
+`vessel.yaml` `type` field declares the pack format: `"lottie"`, `"webm"`, `"mp4"`, or `"gif"`. Shrine plays all four through the same crossfade/min-hold pipeline (`"mp4"` and `"webm"` share a `<video>`-based player; `"gif"` and `"lottie"` each have their own).
 
 ---
 
@@ -40,10 +35,10 @@ vessels/{pack}/
 
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
-| `engram_version` | yes | string | Shaper-facing edit-history semver. New Engrams start at `1.0.0`; the Forge bumps it on save. Must be well-formed semver, but the runtime does not gate loading on its value — it has no bearing on engram.yaml schema compatibility. |
+| `engram_version` | yes | string | Edit-history semver for your own tracking. New Engrams start at `1.0.0`; the Forge bumps it on save. Must be well-formed semver. |
 | `id` | yes | string | Slug. Matches directory name. |
 | `name` | yes | string | Display name. |
-| `voice_id` | yes | string \| null | Reserved for Phase 4+. `null` in Phase 1–3. |
+| `voice_id` | yes | string \| null | Reserved for future voice support. Currently always `null`. |
 | `meta.author` | yes | string | Shaper or creator handle. |
 | `meta.created` | yes | string | ISO date (`YYYY-MM-DD`). |
 | `meta.description` | no | string | Short summary for directory browse cards and detail pages. |
@@ -54,11 +49,11 @@ vessels/{pack}/
 
 ## vessel.yaml
 
-Unversioned. Parsed by MCP server and overlay.
+Read directly by the MCP server and the Shrine overlay display — it has no version field of its own; `engram.yaml`'s `engram_version` covers the whole Engram.
 
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
-| `type` | yes | `"lottie"` \| `"webm"` \| `"mp4"` \| `"gif"` | Clip format. `"lottie"` in Phase 1–2; `"webm"`/`"mp4"`/`"gif"` from Phase 3. |
+| `type` | yes | `"lottie"` \| `"webm"` \| `"mp4"` \| `"gif"` | Clip format. |
 | `pack` | yes | string | Vessel pack id → `vessels/{pack}/`. |
 | `expressions` | yes | object | Maps state name → clip filename (`.json` for Lottie, `.webm`/`.mp4`/`.gif` otherwise). |
 | `transitions.default` | no | `"crossfade"` \| `"cut"` | Default transition between clips. Default: `crossfade`. |
@@ -70,63 +65,4 @@ Unversioned. Parsed by MCP server and overlay.
 
 ### Expression states
 
-| State | Phase | Socket / trigger source |
-|-------|-------|-------------------------|
-| `idle` | 1 | Default, `Stop` aborted, unknown state |
-| `thinking` | 1 | Cursor model stream start; between tools |
-| `waiting` | 1.4 | Mid-turn approval gate (shell / MCP) |
-| `responding` | 1 | Plain-text reply (no tools this turn) |
-| `success` | 1.4 | Turn finished successfully (`stop` + success) |
-| `error` | 1 | Cursor error event |
-| `working` | 2 | Tool activity — Bash, shell, MCP |
-| `searching` | 2 | Tool activity — Read / Grep / Glob |
-| `writing` | 2 | Tool activity — Write / Edit |
-| `attention` | 2 | Claude Code `Notification`; permission denied |
-
-Busy states (`thinking`, `working`, `searching`, `writing`) loop in the overlay during hook silence — no timer escalation.
-
-### Visual tiers vs semantic states (Phase 3.1)
-
-Runtime distinguishes **semantic state** (fine-grained hook output on the wire) from **visual tier** (what the renderer plays). Semantic states are unchanged on the socket; Shrine and clip resolution collapse the post-tool busy cluster into visual `working` after the first tool-aware hook in a turn.
-
-| Semantic state | `firstToolStarted` | Visual tier |
-|----------------|-------------------|-------------|
-| `thinking` | `false` | `thinking` |
-| `thinking`, `searching`, `writing`, `working` | `true` | `working` |
-| `waiting`, `responding`, `success`, `idle`, `error`, `attention` | any | same as semantic |
-
-**Socket broadcast:** `state` remains semantic. Optional additive field `visual_state` carries the visual tier when it differs (see [`state-socket-protocol.md`](./state-socket-protocol.md)).
-
-**HUD:** State word from visual tier (`IDLE`, `WORKING`, `THINKING`, …), a rotating flavor-phrase subtitle per tier (`pickShrineHudSubtitle`, e.g. `idle` → "still here"), and a separate tool-name badge (`toolHudLabel`, e.g. `Grep` → "grepping") shown only when `tool` is present on the broadcast.
-
-**Clip resolution:** `resolveExpressionClip` maps working-cluster semantics to the `working` clip when no per-state clip exists. `searching` / `writing` clips are optional — they may alias to `working`.
-
-**Forge required clips (Phase 3.1):** `idle`, `thinking`, `working`, `responding`. Optional: `searching`, `writing` (alias to working), `error`, `attention`.
-
-### Deprecated expression keys
-
-| Key | Status |
-|-----|--------|
-| `working_loop` | Deprecated — was overlay dead-air fallback. Clip may remain in legacy packs until repurposed or removed. Not a socket state. |
-
-### Missing clip fallback
-
-If any expression file is missing, overlay plays `idle` and logs. No visible error.
-
----
-
-## Cursor bridge
-
-When an Engram is linked to a Cursor workspace, Soul delivery shifts from MCP injection to a compiled always-on rule.
-
-| Concern | Cursor (linked workspace) | Other hosts |
-|---------|----------------------------|-------------|
-| Soul source | `SOUL.md` (canonical) | `SOUL.md` (canonical) |
-| Delivery | `.cursor/rules/{id}.mdc` via `eidola link-engram` | MCP `<system-reminder>` via `awaken` |
-| Vessel | MCP auto-activation / `awaken` | MCP `awaken` |
-
-**Workflow:** Shaper runs `eidola link-engram {id}` from workspace root. Writes `.cursor/rules/{id}.mdc` and `.cursor/eidola.json`. Re-run after SOUL.md edits.
-
-**Stale detection:** SHA-256 hash of SOUL.md stored in `eidola.json` `soul_hash`. MCP warns on stderr when hash mismatches — does not block startup.
-
-Canonical reference: [`cursor-soul-bridge.md`](./cursor-soul-bridge.md).
+`expressions` can map any of these state names to a clip. See [`vessel-reactivity.md`](./vessel-reactivity.md) for what each state name means and what triggers it in Cursor and Claude Code.

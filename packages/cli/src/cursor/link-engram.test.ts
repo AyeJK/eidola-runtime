@@ -77,18 +77,12 @@ describe('linkEngramToWorkspace', () => {
       engramYaml.replace(/^id: .*/m, 'id: ponytail').replace(/^name: .*/m, 'name: Ponytail'),
       'utf8',
     );
+    const soul = await readFile(join(engramDir, 'SOUL.md'), 'utf8');
     await writeFile(
       join(release, '.cursor', 'rules', 'ponytail.mdc'),
-      [
-        '---',
-        'alwaysApply: false',
-        'description: "Ponytail bundle rule"',
-        '---',
-        '',
-        '# Ponytail',
-        '',
-        'Bundle soul.',
-      ].join('\n'),
+      ['---', 'alwaysApply: false', 'description: "Ponytail bundle rule"', '---', '', soul].join(
+        '\n',
+      ),
       'utf8',
     );
 
@@ -101,7 +95,32 @@ describe('linkEngramToWorkspace', () => {
     expect(result.engramDirectory).toBe(engramDir);
     const mdc = await readFile(result.mdcPath, 'utf8');
     expect(mdc).toContain('alwaysApply: true');
-    expect(mdc).toContain('Bundle soul.');
+    expect(mdc).toContain(soul.trim());
+  });
+
+  it('recompiles from SOUL.md when the bundled .mdc is stale', async () => {
+    tempWorkspace = await mkdtemp(join(tmpdir(), 'eidola-link-stale-'));
+    tempEngrams = await mkdtemp(join(tmpdir(), 'eidola-engrams-stale-'));
+    const engramDir = await writeFixtureEngram(tempEngrams, 'fixture-engram');
+    await mkdir(join(tempEngrams, '.cursor', 'rules'), { recursive: true });
+    await writeFile(
+      join(tempEngrams, '.cursor', 'rules', 'fixture-engram.mdc'),
+      ['---', 'alwaysApply: false', 'description: "Stale"', '---', '', 'Outdated soul text.'].join(
+        '\n',
+      ),
+      'utf8',
+    );
+
+    const result = await linkEngramToWorkspace({
+      workspaceRoot: tempWorkspace,
+      engramId: 'fixture-engram',
+      engramDirectory: engramDir,
+      engramsDir: tempEngrams,
+    });
+
+    const mdc = await readFile(result.mdcPath, 'utf8');
+    expect(mdc).not.toContain('Outdated soul text.');
+    expect(mdc).toContain('Fixture Engram');
   });
 
   it('deactivates previous engram rule when switching', async () => {

@@ -21,10 +21,6 @@ export class SessionState {
     return this.active;
   }
 
-  getExpressionOverride(): string | null {
-    return this.expressionOverride;
-  }
-
   getSoulSource(): SoulSource {
     return this.soulSource;
   }
@@ -53,10 +49,6 @@ export class SessionState {
     const loaded = await loadEngramFromDirectory(directory);
     this.active = loaded;
     return loaded;
-  }
-
-  setExpression(state: string): void {
-    this.expressionOverride = state;
   }
 
   buildInitialSoulInjection(): SoulInjectionPayload | null {

@@ -6,13 +6,8 @@ Usage:
   eidola mcp                  Start MCP server (stdio)
   eidola launch shrine        Start Shrine HTTP server
   eidola kill shrine          Stop a running Shrine HTTP server
-  eidola setup-cursor         Add MCP server + install hooks for Cursor (recommended)
-  eidola setup-claude         Add MCP server + install hooks for Claude Code (recommended)
-  eidola setup-hooks          Install Cursor hooks only
-  eidola setup-cursor-mcp     Add Eidola MCP server to ~/.cursor/mcp.json only
-  eidola setup-claude-hooks   Install Claude Code hooks only
-  eidola setup-claude-mcp     Add Eidola MCP server to ~/.claude/settings.json only
-  eidola link-engram <id>     Link Engram Soul to current Cursor workspace
+  eidola setup-cursor         Add MCP server + install hooks for Cursor
+  eidola setup-claude         Add MCP server + install hooks for Claude Code
 `;
 
 async function main(): Promise<void> {
@@ -107,90 +102,6 @@ async function main(): Promise<void> {
     console.log(`MCP   → ${mcpResult.settingsPath}`);
     console.log(`Hooks → ${hooksResult.settingsPath}`);
     console.log('Restart Claude Code so the MCP server connects and hooks reload.');
-    return;
-  }
-
-  if (subcommand === 'setup-hooks') {
-    const { setupCursorHooks } = await import('./setup-hooks.js');
-    const projectMode = process.argv.includes('--project');
-    const result = await setupCursorHooks({ global: !projectMode });
-    console.log(`Wrote ${result.hooksPath}`);
-    console.log(`Relay → ${result.relayPath}`);
-    console.log('Restart Cursor so hooks reload.');
-    return;
-  }
-
-  if (subcommand === 'setup-cursor-mcp') {
-    const { setupCursorMcp } = await import('./setup-cursor-mcp.js');
-    const projectMode = process.argv.includes('--project');
-    const result = await setupCursorMcp({ global: !projectMode });
-    console.log(`Wrote ${result.mcpPath}`);
-    console.log('Restart Cursor so the MCP server connects.');
-    return;
-  }
-
-  if (subcommand === 'setup-claude-hooks') {
-    const { setupClaudeHooks } = await import('./setup-claude-hooks.js');
-    const projectMode = process.argv.includes('--project');
-    const result = await setupClaudeHooks({ global: !projectMode });
-    console.log(`Wrote ${result.settingsPath}`);
-    console.log(`Relay → ${result.relayPath}`);
-    console.log('Restart Claude Code so hooks reload.');
-    return;
-  }
-
-  if (subcommand === 'setup-claude-mcp') {
-    const { setupClaudeMcp } = await import('./setup-claude-mcp.js');
-    const projectMode = process.argv.includes('--project');
-    const result = await setupClaudeMcp({ global: !projectMode });
-    console.log(`Wrote ${result.settingsPath}`);
-    console.log('Restart Claude Code so the MCP server connects.');
-    return;
-  }
-
-  if (subcommand === 'link-engram') {
-    const engramId = process.argv[3]?.trim();
-    if (!engramId) {
-      console.error('Usage: eidola link-engram <engram-id>');
-      process.exit(1);
-    }
-
-    const { resolveEidolaRuntimeConfig } = await import('./config.js');
-    const { linkEngramToWorkspace } = await import('./cursor/link-engram.js');
-    const { readWorkspaceConfig } = await import('./cursor/workspace-config.js');
-    const { resolveEngramLocation } = await import('./engram/registry.js');
-
-    const config = resolveEidolaRuntimeConfig();
-    if (!config.workspaceRoot) {
-      console.error('No Cursor workspace root. Set EIDOLA_WORKSPACE or run from your project.');
-      process.exit(1);
-    }
-
-    let engramDirectory: string | undefined;
-    let vesselsDir: string | undefined;
-    try {
-      const located = await resolveEngramLocation(config.engramsDir, engramId);
-      engramDirectory = located.directory;
-      vesselsDir = located.vesselsDir;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error(message);
-      process.exit(1);
-    }
-
-    const priorConfig = await readWorkspaceConfig(config.workspaceRoot);
-    const result = await linkEngramToWorkspace({
-      workspaceRoot: config.workspaceRoot,
-      engramId,
-      engramsDir: config.engramsDir,
-      engramDirectory,
-      vesselsDir,
-      previousEngramId: priorConfig?.active_engram_id,
-    });
-
-    console.log(`Linked Engram "${result.engramId}" to workspace.`);
-    console.log(`  Rule: ${result.mdcPath}`);
-    console.log(`  Config: ${result.workspaceConfigPath}`);
     return;
   }
 

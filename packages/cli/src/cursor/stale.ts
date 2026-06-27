@@ -12,7 +12,7 @@ export interface StaleSoulCompileCheck {
 
 /**
  * Warn on stderr when SOUL.md content no longer matches the compiled rule hash.
- * Non-blocking — MCP startup and link-engram validation call this for visibility only.
+ * Non-blocking — MCP startup calls this for visibility only.
  */
 export async function warnIfStaleSoulCompile(check: StaleSoulCompileCheck): Promise<boolean> {
   const soulPath = join(check.engramDirectory, 'SOUL.md');
@@ -29,7 +29,7 @@ export async function warnIfStaleSoulCompile(check: StaleSoulCompileCheck): Prom
   if (storedHash && storedHash !== currentHash) {
     const engramId = check.workspaceConfig?.active_engram_id ?? 'unknown';
     console.error(
-      `[eidola] Stale Cursor rule: SOUL.md changed since last compile (hash mismatch). Re-run: eidola link-engram ${engramId}`,
+      `[eidola] Stale Cursor rule: SOUL.md changed since last compile (hash mismatch). Re-awaken "${engramId}" to relink.`,
     );
     return true;
   }
@@ -47,7 +47,7 @@ export async function warnIfStaleSoulCompile(check: StaleSoulCompileCheck): Prom
   if (compiledBodyHash !== currentHash) {
     const engramId = check.workspaceConfig?.active_engram_id ?? 'unknown';
     console.error(
-      `[eidola] Stale Cursor rule: compiled .mdc body does not match SOUL.md. Re-run: eidola link-engram ${engramId}`,
+      `[eidola] Stale Cursor rule: compiled .mdc body does not match SOUL.md. Re-awaken "${engramId}" to relink.`,
     );
     return true;
   }

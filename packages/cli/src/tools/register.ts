@@ -56,15 +56,4 @@ export function registerEidolaTools(server: McpServer, handlers: EidolaToolHandl
     async () => jsonResult(await handlers.sleep(server.server.getClientVersion())),
   );
 
-  server.registerTool(
-    'set_expression',
-    {
-      title: 'Set Expression',
-      description: 'Manually override the active Vessel expression state for testing.',
-      inputSchema: {
-        state: z.string().describe('Expression state key from vessel.yaml (e.g. idle, thinking)'),
-      },
-    },
-    async ({ state }) => jsonResult(await handlers.setExpression(state)),
-  );
 }

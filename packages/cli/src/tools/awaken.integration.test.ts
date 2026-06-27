@@ -96,29 +96,6 @@ describe('awaken integration', () => {
     expect(result.error).toContain('not found in Eidola folder');
   });
 
-  it('set_expression maps vessel state after awaken', async () => {
-    const fixture = await createFixtureEngramsDir();
-    tempEngramsDir = fixture.engramsDir;
-    const config = resolveEidolaRuntimeConfig({
-      EIDOLA_ROOT: repoRoot,
-      EIDOLA_ENGRAMS_DIR: fixture.engramsDir,
-    });
-    const session = new SessionState();
-    const stateSocket = createStateSocketServer(session, { port: 0 });
-    await stateSocket.start();
-    const handlers = createToolHandlers(config, session, stateSocket);
-
-    await handlers.awaken(FIXTURE_ENGRAM_ID);
-    const result = await handlers.setExpression('thinking');
-
-    expect(result.ok).toBe(true);
-    expect(result.expression).toBe('thinking');
-    expect(result.clip).toBe('thinking.json');
-    expect(result.mapped).toBe(true);
-
-    await stateSocket.close();
-  });
-
   it('broadcasts idle on successful awaken', async () => {
     const fixture = await createFixtureEngramsDir();
     tempEngramsDir = fixture.engramsDir;

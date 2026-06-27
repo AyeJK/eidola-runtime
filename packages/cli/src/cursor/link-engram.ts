@@ -115,7 +115,10 @@ export async function linkEngramToWorkspace(params: LinkEngramParams): Promise<L
   }
 
   const prebuilt = await readPrebuiltCursorRule(engramDirectory, engramId);
-  const compiled = prebuilt
+  const prebuiltMatchesSoul =
+    prebuilt &&
+    computeSoulHash(parseCompiledCursorRule(prebuilt).body) === computeSoulHash(loaded.soul);
+  const compiled = prebuiltMatchesSoul
     ? (() => {
         const content = setCursorRuleAlwaysApply(prebuilt, true);
         const { body } = parseCompiledCursorRule(content);

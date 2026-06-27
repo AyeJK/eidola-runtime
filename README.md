@@ -1,17 +1,106 @@
 # Eidola Runtime
 
-The open, MIT-licensed core of [Eidola](https://eidola.app) — middleware that
-gives AI personas a visible, reactive presence inside the editors developers
-already use (Cursor, Claude Code, and Cowork).
+AI Personality Runtime — portable persona system with reactive avatars.
 
-Eidola injects a persona's **Soul** into your editor session via an MCP
-server, and a local **Shrine** display shows a **Vessel** (animated avatar)
-that reacts in real time to tool activity and model state. This repo is the
-local-first middleware Shapers run themselves — no lock-in, fully auditable.
+Eidola gives AI personas a visible, reactive presence, inside the editors you
+already use. Install one CLI, awaken a persona ("**Engram**"), and a local 
+display (**Shrine**) shows an animated avatar (**Vessel**) that reacts to 
+what your agent is doing.
 
-The hosted Directory (publishing, browsing, auth) and the Forge authoring
-tool live in a separate private platform repo. This repo is just the runtime
-Shapers install and run locally.
+This repo is the open, MIT-licensed runtime — the local-first middleware you
+install and run yourself. It's not a chat app; it sits on top of your editor
+via MCP and hooks. No lock-in, fully auditable.
+
+Browse, create, and publish Engrams at [Eidola.app](https://eidola.app).
+
+## Install
+
+### 1. Install the runtime
+
+```bash
+npm install -g "@eidola/cli"
+```
+
+Requires Node.js 20 or later.
+
+### 2. Create your Eidola folder
+
+Create a folder called `Eidola` anywhere on your computer (e.g.
+`~/Documents/Eidola/`) and download an Engram into it — unzip it directly
+inside.
+
+### 3. Connect your AI editor
+
+Run one of these once, then fully quit and relaunch your editor:
+
+```bash
+eidola setup-claude   # Claude Code
+eidola setup-cursor   # Cursor
+```
+
+Each writes the Eidola MCP server entry plus the hook relay config that
+drives a reactive Vessel from tool activity (global by default; pass
+`--project` to scope either command to the current workspace instead).
+
+### 4. Launch the Shrine
+
+```bash
+eidola launch shrine
+```
+
+Open the shrine in your browser at `http://127.0.0.1:9743/shrine/`. Or just ask your
+editor's agent to "launch the shrine."
+
+### 5. Awaken
+
+In the Shrine UI: choose your Eidola folder → pick an Engram → click
+**Awaken**. Optionally press F11 for fullscreen.
+
+You can do the same thing from chat instead — ask your agent to "Awaken
+`<engram-id>`" — it's equivalent to clicking Awaken in the UI.
+
+## CLI commands
+
+| Command | What it does |
+|---|---|
+| `eidola mcp` | Starts the MCP server over stdio. Your editor's MCP config invokes this — you won't normally run it by hand. |
+| `eidola launch shrine` | Starts the Shrine display (`http://127.0.0.1:9743/shrine`). |
+| `eidola kill shrine` | Stops a running Shrine display. |
+| `eidola setup-cursor [--project]` | Adds the Eidola MCP server to Cursor and installs the reactive-Vessel hooks. |
+| `eidola setup-claude [--project]` | Adds the Eidola MCP server to Claude Code and installs the reactive-Vessel hooks. |
+
+## MCP tools
+
+For driving Eidola from chat instead of the Shrine UI:
+
+| Tool | Input | What it does |
+|---|---|---|
+| `awaken` | `engram_id` | Loads an Engram, binds its Vessel, wires up Soul delivery for your editor, and shows it on the Shrine display. |
+| `sleep` | _(none)_ | Puts the active Engram to sleep — removes the Soul artifacts `awaken` wrote and clears the Shrine display. |
+| `launch_shrine` | `surface` (optional) | Starts the Shrine display if it isn't already running. |
+
+See [`docs/spec/cli-mcp-reference.md`](./docs/spec/cli-mcp-reference.md) for full details.
+
+## What's an Engram
+
+An Engram is a portable persona package — a folder with three files plus its
+Vessel clips:
+
+```
+{id}/
+  SOUL.md        # personality, written in prose
+  vessel.yaml    # expression map (state → clip)
+  engram.yaml    # metadata/version
+vessels/{pack}/
+  idle.mp4      # or .gif / .json / .webm
+  thinking.mp4
+  ...
+```
+
+`SOUL.md` works on its own, with no runtime, as plain context you paste into
+any AI editor. The full spec — including `engram.yaml`/`vessel.yaml` field
+references — lives in [`docs/spec/engram-format.md`](./docs/spec/engram-format.md).
+The spec stays open regardless of what gets built or monetized on top of it.
 
 ## What's in this repo
 
@@ -24,39 +113,23 @@ Shapers install and run locally.
 | `packages/shrine` | `@eidola/shrine` | The Shrine — a local HTTP server that renders the active Vessel (Lottie/WebM/Three.js) and reacts to live state over SSE. |
 | `packages/cursor-ext` | `eidola-state-bridge` (VS Code Marketplace) | Optional VS Code extension for coarser LM-state signals inside Cursor. Not published under the `@eidola/*` npm scope — it's a Marketplace listing, not an npm package. |
 
-The **Engram spec** — the open format for persona packages (`SOUL.md`,
-`vessel.yaml`, `engram.yaml`) — lives in [`docs/spec/`](./docs/spec). The
-spec stays open regardless of what gets built or monetized on top of it.
-
-## Install
+## Building from source
 
 ```bash
 pnpm install
 pnpm build
-```
-
-To run the test suite across all packages:
-
-```bash
 pnpm test
 ```
 
 Each package can also be built/tested individually with `pnpm --filter <package> run build`.
-
-## Platform
-
-The Directory (public Engram browsing + publishing) and Forge (Engram
-authoring web app) are part of a separate, private platform repo that
-consumes these runtime packages as versioned npm dependencies
-(`@eidola/cli@^x.y.z`, etc.). That repo is not public.
 
 ## Contributing
 
 This repo is young and still stabilizing its public release shape. Issues
 and PRs are welcome — please open an issue to discuss substantial changes
 before sending a PR, since the Engram spec format and the hook
-relay/state-socket protocol are both meant to stay stable across Shaper
-installs. Run `pnpm build && pnpm test` before submitting.
+relay/state-socket protocol are both meant to stay stable across installs.
+Run `pnpm build && pnpm test` before submitting.
 
 ## License
 

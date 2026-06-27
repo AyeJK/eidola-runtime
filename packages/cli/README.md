@@ -1,47 +1,42 @@
 # @eidola/cli
 
-Published npm package (`npm install -g @eidola/cli`) — unified `eidola` CLI for MCP server and Shrine HTTP display.
+The unified `eidola` CLI: MCP server, Shrine display, and reactive Vessel
+control for [Eidola](https://eidola.app) — middleware that gives AI personas
+a visible, reactive presence inside Cursor and Claude Code.
 
-Runs over stdio (`eidola mcp`) or browser Shrine (`eidola launch shrine`). Binds locally; never proxies API keys.
-
-**Packaging:** `@eidola/tool-state` is bundled into `dist/vendor/` (not published separately). Shrine server + Vite renderer ship in `dist/shrine/`; Three.js and Lottie are prebuilt into renderer assets — single `npm install -g @eidola/cli`, no peer packages.
+Local-first: runs over stdio (`eidola mcp`) or serves a browser Shrine
+(`eidola launch shrine`). Binds locally; never proxies API keys. Single
+install — `@eidola/tool-state`, the Shrine server, and the Vite renderer
+(Three.js/Lottie prebuilt) all ship inside this package; there are no peer
+packages to install separately.
 
 ## Install
 
 ```bash
-npm install -g @eidola/cli
+npm install -g "@eidola/cli"
 ```
 
-## Commands
+Requires Node.js 20 or later.
 
-| Command | Description |
-|---|---|
-| `eidola mcp` | MCP server over stdio |
-| `eidola launch shrine` | Start Shrine HTTP server at `http://127.0.0.1:9743/shrine` |
-| `eidola kill shrine` | Stop a running Shrine HTTP server |
-| `eidola setup-claude-mcp` | Add Eidola MCP server to `~/.claude/settings.json` (global by default; `--project` for workspace-local) |
-| `eidola setup-claude-hooks` | Install Claude Code hooks for reactive Vessel (global by default; `--project` for workspace-local) |
-| `eidola setup-cursor-mcp` | Add Eidola MCP server to `~/.cursor/mcp.json` (global by default; `--project` for workspace-local) |
-| `eidola setup-hooks` | Install Cursor hooks for reactive Vessel (global by default; `--project` for workspace-local) |
-| `eidola link-engram <id>` | Link an Engram Soul to the current Cursor workspace |
+## Setup
 
-## Claude Code setup
+### 1. Create your Eidola folder
+
+Create a folder called `Eidola` anywhere on your computer (e.g.
+`~/Documents/Eidola/`) and unzip a downloaded Engram directly inside it.
+
+### 2. Connect your AI editor
+
+Run once, then fully quit and relaunch your editor:
 
 ```bash
-eidola setup-claude-mcp
-eidola setup-claude-hooks
+eidola setup-claude   # Claude Code
+eidola setup-cursor   # Cursor
 ```
 
-Then fully quit and relaunch Claude Code. This writes the MCP server entry and hook relay config into `~/.claude/settings.json` so tool activity drives your Vessel via Claude Code's native hook system.
-
-## Cursor setup
-
-```bash
-eidola setup-cursor-mcp
-eidola setup-hooks
-```
-
-Then fully quit and relaunch Cursor. This writes the MCP server entry to `~/.cursor/mcp.json` and the hook relay config so tool activity drives your Vessel — equivalent to:
+`setup-claude` writes the MCP server entry and hook relay config into
+`~/.claude/settings.json`. `setup-cursor` writes the MCP server entry to
+`~/.cursor/mcp.json` plus the hook relay config — equivalent to:
 
 ```json
 {
@@ -57,12 +52,56 @@ Then fully quit and relaunch Cursor. This writes the MCP server entry to `~/.cur
 }
 ```
 
-Unzip Engrams directly into your Eidola folder.
+Either command writes to your home directory by default; pass `--project`
+to scope it to the current workspace instead.
+
+### 3. Launch the Shrine
+
+```bash
+eidola launch shrine
+```
+
+Open the shrine in your browser at `http://127.0.0.1:9743/shrine/`. Or just
+ask your editor's agent to "launch the shrine."
+
+### 4. Awaken
+
+In the Shrine UI: choose your Eidola folder → pick an Engram → click
+**Awaken**. Optionally press F11 for fullscreen.
+
+You can do the same thing from chat instead — ask your agent to "Awaken
+`<engram-id>`" — it's equivalent to clicking Awaken in the UI.
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `eidola mcp` | MCP server over stdio |
+| `eidola launch shrine` | Start Shrine HTTP server at `http://127.0.0.1:9743/shrine` |
+| `eidola kill shrine` | Stop a running Shrine HTTP server |
+| `eidola setup-cursor [--project]` | Add Eidola MCP server to Cursor + install hooks for a reactive Vessel (global by default; `--project` for workspace-local) |
+| `eidola setup-claude [--project]` | Add Eidola MCP server to Claude Code + install hooks for a reactive Vessel (global by default; `--project` for workspace-local) |
+
+## MCP tools
+
+A chat-based alternative to the Shrine UI, for calling from your editor's agent:
+
+| Tool | Input | What it does |
+|---|---|---|
+| `awaken` | `engram_id` | Loads an Engram, binds its Vessel, wires up Soul delivery, and shows it on the Shrine display. |
+| `sleep` | _(none)_ | Puts the active Engram to sleep and clears the Shrine display. |
+| `launch_shrine` | `surface` (optional) | Starts the Shrine display if it isn't already running. |
 
 ## Environment
 
 | Variable | Default | Description |
 |---|---|---|
-| `EIDOLA_ROOT` | cwd (published) or monorepo root (dev) | Shaper folder or repo root |
+| `EIDOLA_ROOT` | cwd (published) or monorepo root (dev) | Your Eidola folder |
 | `EIDOLA_ENGRAMS_DIR` | `$EIDOLA_ROOT` (published) or `$EIDOLA_ROOT/engrams` (monorepo dev) | Engram scan path |
 | `EIDOLA_VESSELS_DIR` | `$EIDOLA_ROOT/vessels` | Vessel pack path |
+
+## Learn more
+
+Full source, the Engram spec, and other runtime packages (hook relays,
+Shrine, Cursor extension) live in the
+[eidola-runtime](https://github.com/AyeJK/eidola-runtime) repo.

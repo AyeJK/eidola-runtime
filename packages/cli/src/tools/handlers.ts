@@ -18,7 +18,6 @@ import { resolveEngramLocation } from '../engram/registry.js';
 import { EngramLoadError } from '../engram/types.js';
 import { writeMcpAwakenSignal } from '../cursor/mcp-awaken-signal.js';
 import type { SessionState } from '../session/state.js';
-import { resolveExpressionClip } from '../socket/expression.js';
 import type { StateSocketServer } from '../socket/server.js';
 import { buildSoulInjectionPayload } from '../soul/injection.js';
 
@@ -32,7 +31,6 @@ export interface ToolTextResult {
 export interface EidolaToolHandlers {
   awaken(engramId: string, clientInfo?: ClientInfoLike): Promise<ToolTextResult>;
   sleep(clientInfo?: ClientInfoLike): Promise<ToolTextResult>;
-  setExpression(state: string): Promise<ToolTextResult>;
   launchShrine(options?: { surface?: string }): Promise<ToolTextResult>;
 }
 
@@ -45,7 +43,6 @@ export function createToolHandlers(
     awaken: (engramId, clientInfo) =>
       handleAwaken(config, session, engramId, stateSocket, clientInfo),
     sleep: (clientInfo) => handleSleep(config, session, clientInfo),
-    setExpression: (state) => handleSetExpression(session, state, stateSocket),
     launchShrine: (options) => handleLaunchShrine(config, options),
   };
 }
@@ -215,43 +212,6 @@ async function handleSleep(
   } catch (error) {
     return toolError(error);
   }
-}
-
-async function handleSetExpression(
-  session: SessionState,
-  state: string,
-  stateSocket?: StateSocketServer,
-): Promise<ToolTextResult> {
-  const trimmed = state.trim();
-  if (!trimmed) {
-    return {
-      ok: false,
-      error: 'Expression state must be a non-empty string.',
-      code: 'INVALID_EXPRESSION',
-    };
-  }
-
-  const active = session.getActive();
-  if (!active) {
-    return {
-      ok: false,
-      error: 'No active Engram. Call awaken first.',
-      code: 'NO_ACTIVE_ENGRAM',
-    };
-  }
-
-  session.setExpression(trimmed);
-
-  const clip = resolveExpressionClip(trimmed, active.vessel);
-  const broadcast = stateSocket?.broadcastState({ state: trimmed, surface: 'manual' });
-
-  return {
-    ok: true,
-    engram_id: active.engram.id,
-    expression: trimmed,
-    clip: broadcast?.expression ?? clip,
-    mapped: (broadcast?.expression ?? clip) !== null,
-  };
 }
 
 async function handleLaunchShrine(
