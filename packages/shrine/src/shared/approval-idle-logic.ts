@@ -1,4 +1,4 @@
-/** Shell / MCP tools that may block on Shaper approval — arms approval-idle timer. */
+/** Shell / MCP tools that may block on user approval — arms approval-idle timer. */
 export function isGatedApprovalTool(tool?: string): boolean {
   if (!tool) {
     return false;

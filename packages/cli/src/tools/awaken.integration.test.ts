@@ -257,7 +257,7 @@ describe('awaken integration', () => {
 
     await handlers.awaken(FIXTURE_ENGRAM_ID, { name: 'claude-code', version: '1.0.0' });
     const claudeMdBefore = await readFile(claudeMdPath(tempWorkspace), 'utf8');
-    const customNote = '\n\nShaper note: do not remove this line.\n';
+    const customNote = '\n\nUser note: do not remove this line.\n';
     await writeFile(claudeMdPath(tempWorkspace), `${claudeMdBefore}${customNote}`, 'utf8');
 
     const result = await handlers.awaken(secondEngramId, { name: 'claude-code', version: '1.0.0' });
@@ -266,7 +266,7 @@ describe('awaken integration', () => {
     const claudeMdAfter = await readFile(claudeMdPath(tempWorkspace), 'utf8');
     expect(claudeMdAfter).toContain(`@.claude/souls/${secondEngramId}.md`);
     expect(claudeMdAfter).not.toContain(`@.claude/souls/${FIXTURE_ENGRAM_ID}.md`);
-    expect(claudeMdAfter).toContain('Shaper note: do not remove this line.');
+    expect(claudeMdAfter).toContain('User note: do not remove this line.');
   });
 
   it('switching Engrams on claude_code deletes the previous soul file, leaving only the new one', async () => {

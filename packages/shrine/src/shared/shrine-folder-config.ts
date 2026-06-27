@@ -7,7 +7,7 @@ export interface ShrineFolderConfig {
   engramsDir: string;
 }
 
-/** Overridable in tests so they never touch the Shaper's real `~/.eidola/shrine.json`. */
+/** Overridable in tests so they never touch the user's real `~/.eidola/shrine.json`. */
 function configDir(): string {
   return process.env.EIDOLA_SHRINE_CONFIG_DIR?.trim() || join(homedir(), '.eidola');
 }

@@ -5,7 +5,7 @@
  *
  * Shrine bundling decision (Sprint 4.2.1): bundle-all in one package.
  * Three.js and Lottie ship inside the prebuilt renderer assets (~few MB);
- * no peer @eidola/shrine publish — Shaper install stays `npm install -g eidola`.
+ * no peer @eidola/shrine publish — User install stays `npm install -g eidola`.
  */
 import { cp, mkdir, readFile, readdir, rm, writeFile, access } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';

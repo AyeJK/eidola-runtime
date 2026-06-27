@@ -39,11 +39,11 @@ To load and run an Engram, unzip it into your Eidola folder, launch the Shrine, 
 | `id` | yes | string | Slug. Matches directory name. |
 | `name` | yes | string | Display name. |
 | `voice_id` | yes | string \| null | Reserved for future voice support. Currently always `null`. |
-| `meta.author` | yes | string | Shaper or creator handle. |
+| `meta.author` | yes | string | User or creator handle. |
 | `meta.created` | yes | string | ISO date (`YYYY-MM-DD`). |
 | `meta.description` | no | string | Short summary for directory browse cards and detail pages. |
 | `meta.tags` | no | string[] | Browse/filter tags. |
-| `extensions` | yes | object | Shaper namespace. Preserved verbatim across migrations; never migrated by Eidola. |
+| `extensions` | yes | object | User namespace. Preserved verbatim across migrations; never migrated by Eidola. |
 
 ---
 

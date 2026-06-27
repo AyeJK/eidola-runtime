@@ -13,7 +13,7 @@ export function parseSemver(version: string): { major: number; minor: number; pa
 }
 
 /**
- * engram_version tracks a Shaper's edit history, not runtime/spec compatibility —
+ * engram_version tracks a user's edit history, not runtime/spec compatibility —
  * there is no major-version gate here, only a well-formed-semver check.
  */
 export function validateEngramVersion(version: string): void {

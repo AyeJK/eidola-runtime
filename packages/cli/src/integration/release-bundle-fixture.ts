@@ -6,7 +6,7 @@ import { readEngramIdFromDirectory } from '../engram/list-metadata.js';
 export const PONYTAIL_BUNDLE_DIR = 'ponytail-engram-1.0.0';
 export const PONYTAIL_ENGRAM_DIR = 'ponytail-engram';
 
-/** Default Shaper folder — override with EIDOLA_ENGRAMS_DIR in CI. */
+/** Default user folder — override with EIDOLA_ENGRAMS_DIR in CI. */
 export function resolveTestEngramsDir(): string {
   const env = process.env.EIDOLA_ENGRAMS_DIR?.trim();
   if (env) {

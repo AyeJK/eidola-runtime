@@ -60,14 +60,14 @@ describe('ensureSoulImport', () => {
     expect(startCount).toBe(1);
   });
 
-  it('leaves Shaper-authored content outside the marker block untouched', async () => {
+  it('leaves user-authored content outside the marker block untouched', async () => {
     const path = claudeMdPath(workspaceRoot);
-    const shaperContent = '# My Project\n\nSome notes about the project.\n\nMore details here.\n';
-    await writeFile(path, shaperContent, 'utf8');
+    const userContent = '# My Project\n\nSome notes about the project.\n\nMore details here.\n';
+    await writeFile(path, userContent, 'utf8');
 
     await ensureSoulImport(workspaceRoot, 'my-engram');
     const afterFirst = await readFile(path, 'utf8');
-    expect(afterFirst.startsWith(shaperContent.trimEnd())).toBe(true);
+    expect(afterFirst.startsWith(userContent.trimEnd())).toBe(true);
     expect(afterFirst).toContain('@.claude/souls/my-engram.md');
 
     await ensureSoulImport(workspaceRoot, 'switched-engram');
@@ -119,21 +119,21 @@ describe('removeSoulImport', () => {
 
   it('no-ops cleanly when CLAUDE.md exists but has no marker block', async () => {
     const path = claudeMdPath(workspaceRoot);
-    const shaperContent = '# My Project\n\nSome notes.\n';
-    await writeFile(path, shaperContent, 'utf8');
+    const userContent = '# My Project\n\nSome notes.\n';
+    await writeFile(path, userContent, 'utf8');
 
     const result = await removeSoulImport(workspaceRoot);
     expect(result.ok).toBe(true);
     expect(result.removed).toBe(false);
 
     const content = await readFile(path, 'utf8');
-    expect(content).toBe(shaperContent);
+    expect(content).toBe(userContent);
   });
 
-  it('leaves surrounding Shaper content untouched, including the spacer it removes', async () => {
+  it('leaves surrounding user content untouched, including the spacer it removes', async () => {
     const path = claudeMdPath(workspaceRoot);
-    const shaperContent = '# My Project\n\nSome notes about the project.\n\nMore details here.\n';
-    await writeFile(path, shaperContent, 'utf8');
+    const userContent = '# My Project\n\nSome notes about the project.\n\nMore details here.\n';
+    await writeFile(path, userContent, 'utf8');
 
     await ensureSoulImport(workspaceRoot, 'my-engram');
     const result = await removeSoulImport(workspaceRoot);

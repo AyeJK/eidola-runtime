@@ -158,7 +158,7 @@ const IMPORT_LINE_PATTERN = /^@\.claude\/souls\/(.+)\.md$/m;
  * the previous Engram's `.claude/souls/{id}.md` instead of orphaning it.
  * Returns `null` when CLAUDE.md is absent, has no marker block, or the
  * block's import line doesn't match the expected `@.claude/souls/{id}.md`
- * shape (e.g. hand-edited by a Shaper).
+ * shape (e.g. hand-edited by a user).
  */
 export async function findActiveSoulImportEngramId(
   workspaceRoot: string,
