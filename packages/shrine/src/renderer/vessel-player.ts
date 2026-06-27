@@ -31,6 +31,7 @@ export class VesselPlayer {
   private pendingPlay: { payload: ShrineStatePayload; config: ShrineVesselConfig } | null = null;
   private holdTimer: number | null = null;
   private currentPlay: Promise<void> = Promise.resolve();
+  private onVisualTierChange: ((payload: ShrineStatePayload) => void) | null = null;
 
   constructor(root: HTMLElement) {
     this.stage = root;
@@ -59,6 +60,17 @@ export class VesselPlayer {
 
   setAutoIdleHandler(handler: (() => void | Promise<void>) | null): void {
     this.autoIdleHandler = handler;
+  }
+
+  /**
+   * Fired exactly when a clip transition actually commits — i.e. after the
+   * minHoldMs/pendingPlay gating in `play()` has resolved, not when a state
+   * payload first arrives. Callers should drive HUD text off this instead of
+   * the incoming payload, otherwise the label can flip to a new state while
+   * the vessel is still holding/queued on the old clip.
+   */
+  setVisualTierChangeHandler(handler: ((payload: ShrineStatePayload) => void) | null): void {
+    this.onVisualTierChange = handler;
   }
 
   play(payload: ShrineStatePayload, config: ShrineVesselConfig): Promise<void> {
@@ -144,6 +156,7 @@ export class VesselPlayer {
 
     this.currentVisualTier = visualTier;
     this.crossfadeMs = config.crossfadeMs;
+    this.onVisualTierChange?.(payload);
     await this.playClip(payload.clipUrl, {
       loop: payload.loop,
       crossfadeMs: config.crossfadeMs,
@@ -176,6 +189,7 @@ export class VesselPlayer {
     // state then mismatches on clipUrl and re-triggers a clip we're already
     // playing.
     this.currentVisualTier = 'idle';
+    this.onVisualTierChange?.(this.idlePayload);
     await this.playClip(this.idlePayload.clipUrl, {
       loop: this.idlePayload.loop,
       crossfadeMs: this.crossfadeMs,

@@ -288,11 +288,13 @@ function runShrine(): void {
       return;
     }
     const payload: ShrineStatePayload = { ...cachedIdlePayload, source: 'fallback' };
-    setHud(payload, resolveVisualTier(payload.broadcast));
     await player.play(payload, vesselConfig);
   }
 
   player.setAutoIdleHandler(() => transitionToIdle());
+  player.setVisualTierChangeHandler((payload) => {
+    setHud(payload, payload.broadcast.visual_state ?? payload.broadcast.state);
+  });
 
   function applyHudSubtitle(sub: string): void {
     hudSubtitleText = sub;
@@ -383,7 +385,6 @@ function runShrine(): void {
     applyShrineBackground(gated.broadcast.state);
 
     const visualTier = resolveVisualTier(gated.broadcast);
-    setHud(gated, visualTier);
 
     window.eidolaShrine.log(
       `[renderer] onIncomingState state=${gated.broadcast.state} visual=${visualTier} source=${gated.source}`,
