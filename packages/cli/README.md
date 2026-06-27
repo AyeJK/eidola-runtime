@@ -6,9 +6,7 @@ a visible, reactive presence inside Cursor and Claude Code.
 
 Local-first: runs over stdio (`eidola mcp`) or serves a browser Shrine
 (`eidola launch shrine`). Binds locally; never proxies API keys. Single
-install — `@eidola/tool-state`, the Shrine server, and the Vite renderer
-(Three.js/Lottie prebuilt) all ship inside this package; there are no peer
-packages to install separately.
+install — there are no peer packages to install separately.
 
 ## Install
 

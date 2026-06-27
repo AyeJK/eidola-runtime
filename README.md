@@ -83,8 +83,7 @@ See [`docs/spec/cli-mcp-reference.md`](./docs/spec/cli-mcp-reference.md) for ful
 
 ## What's an Engram
 
-An Engram is a portable persona package — a folder with three files plus its
-Vessel clips:
+An Engram is a portable persona package:
 
 ```
 {id}/
@@ -97,10 +96,7 @@ vessels/{pack}/
   ...
 ```
 
-`SOUL.md` works on its own, with no runtime, as plain context you paste into
-any AI editor. The full spec — including `engram.yaml`/`vessel.yaml` field
-references — lives in [`docs/spec/engram-format.md`](./docs/spec/engram-format.md).
-The spec stays open regardless of what gets built or monetized on top of it.
+The full spec lives in [`docs/spec/engram-format.md`](./docs/spec/engram-format.md).
 
 ## What's in this repo
 
