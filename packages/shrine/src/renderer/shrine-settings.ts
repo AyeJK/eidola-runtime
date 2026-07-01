@@ -20,6 +20,7 @@ export interface ShrineEngramEntry {
 
 export interface ShrineAwakenRequest {
   engramId: string;
+  enablePersonality: boolean;
 }
 
 export interface ShrineSleepRequest {
@@ -89,6 +90,7 @@ export function mountShrineSetupPage(options: ShrineSetupOptions): ShrineSetupCo
   let settingFolder = false;
   let pickingFolder = false;
   let escapeOverlayVisible = false;
+  const personalityEnabled = new Map<string, boolean>();
 
   host.innerHTML = `
     <div class="shrine-setup-shell">
@@ -297,6 +299,19 @@ export function mountShrineSetupPage(options: ShrineSetupOptions): ShrineSetupCo
                    ${awakening ? 'Awakening…' : 'Awaken'}
                  </button>`;
 
+            const personalityChecked = personalityEnabled.get(entry.id) ?? true;
+            const personalityToggle = isActive
+              ? ''
+              : `<label class="listing-card-personality-toggle">
+                   <input
+                     type="checkbox"
+                     class="listing-card-personality-checkbox"
+                     data-personality-toggle="${escapeHtml(entry.id)}"
+                     ${personalityChecked ? 'checked' : ''}
+                   />
+                   <span class="listing-card-personality-label">Enable Personality</span>
+                 </label>`;
+
             return `
               <article class="listing-card group${isActive ? ' listing-card--active' : ''}">
                 <div class="listing-card-preview" aria-hidden="true">
@@ -311,6 +326,7 @@ export function mountShrineSetupPage(options: ShrineSetupOptions): ShrineSetupCo
                   ${description ? `<p class="listing-card-description">${escapeHtml(description)}</p>` : ''}
                   <div class="listing-card-footer">
                     ${actionButton}
+                    ${personalityToggle}
                   </div>
                 </div>
               </article>
@@ -486,7 +502,8 @@ export function mountShrineSetupPage(options: ShrineSetupOptions): ShrineSetupCo
     renderEngrams();
 
     try {
-      await options.onAwaken({ engramId });
+      const enablePersonality = personalityEnabled.get(engramId) ?? true;
+      await options.onAwaken({ engramId, enablePersonality });
     } finally {
       awakeningEngramId = null;
       renderEngrams();
@@ -606,6 +623,15 @@ export function mountShrineSetupPage(options: ShrineSetupOptions): ShrineSetupCo
     }
 
     void awakenEngram(awakenBtn.dataset.awakenEngram);
+  });
+
+  ui.engramList.addEventListener('change', (event) => {
+    const target = event.target as HTMLElement;
+    const toggle = target.closest<HTMLInputElement>('[data-personality-toggle]');
+    if (!toggle?.dataset.personalityToggle) {
+      return;
+    }
+    personalityEnabled.set(toggle.dataset.personalityToggle, toggle.checked);
   });
 
   escapeResumeBtn.addEventListener('click', () => {

@@ -59,8 +59,8 @@ async function bootstrap(): Promise<boolean> {
   }
 
   setupController = mountShrineSetupPage({
-    onAwaken: async ({ engramId }) => {
-      await awakenBrowserShrine(engramId);
+    onAwaken: async ({ engramId, enablePersonality }) => {
+      await awakenBrowserShrine(engramId, enablePersonality);
     },
     onSleep: async ({ engramId }) => {
       await sleepBrowserShrine(engramId);
@@ -114,12 +114,13 @@ function hideVesselView(): void {
   setupController?.show();
 }
 
-async function awakenBrowserShrine(engramId: string): Promise<void> {
+async function awakenBrowserShrine(engramId: string, enablePersonality: boolean): Promise<void> {
   const response = await fetch('/shrine/api/awaken', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       engram_id: engramId,
+      enable_personality: enablePersonality,
     }),
   });
 

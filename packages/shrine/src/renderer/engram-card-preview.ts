@@ -1,6 +1,10 @@
 import lottie from 'lottie-web';
 import type { AnimationItem } from 'lottie-web';
 
+/** Center band of the viewport that counts as "focused" — roughly the middle third. Matches the browse page. */
+const FOCUS_ROOT_MARGIN = '-35% 0px -35% 0px';
+const FOCUS_EXIT_DELAY_MS = 150;
+
 function isVideoType(vesselType: string): boolean {
   return vesselType === 'webm' || vesselType === 'mp4';
 }
@@ -9,17 +13,13 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-function canHover(): boolean {
-  return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-}
-
 interface CardPreviewState {
-  card: HTMLElement;
   host: HTMLElement;
   url: string;
   vesselType: string;
   inView: boolean;
-  hovered: boolean;
+  inFocus: boolean;
+  focusExitTimer: ReturnType<typeof setTimeout> | null;
   lottieAnim: AnimationItem | null;
   video: HTMLVideoElement | null;
   gifImage: HTMLImageElement | null;
@@ -27,16 +27,7 @@ interface CardPreviewState {
 }
 
 function shouldAnimate(state: CardPreviewState): boolean {
-  if (!state.inView) {
-    return false;
-  }
-  if (prefersReducedMotion()) {
-    return false;
-  }
-  if (canHover()) {
-    return state.hovered;
-  }
-  return true;
+  return state.inView && state.inFocus && !prefersReducedMotion();
 }
 
 function clearHost(state: CardPreviewState): void {
@@ -227,25 +218,6 @@ async function syncPreview(state: CardPreviewState): Promise<void> {
   syncLottie(state, playing);
 }
 
-function bindCardHover(state: CardPreviewState): void {
-  const { card } = state;
-
-  const setHovered = (hovered: boolean) => {
-    state.hovered = hovered;
-    void syncPreview(state);
-  };
-
-  card.addEventListener('mouseenter', () => setHovered(true));
-  card.addEventListener('mouseleave', () => setHovered(false));
-  card.addEventListener('focusin', () => setHovered(true));
-  card.addEventListener('focusout', (event) => {
-    const next = event.relatedTarget;
-    if (!card.contains(next instanceof Node ? next : null)) {
-      setHovered(false);
-    }
-  });
-}
-
 function bindInView(state: CardPreviewState): void {
   const observer = new IntersectionObserver(
     ([entry]) => {
@@ -253,6 +225,31 @@ function bindInView(state: CardPreviewState): void {
       void syncPreview(state);
     },
     { rootMargin: '200px 0px' },
+  );
+
+  observer.observe(state.host);
+}
+
+function bindInFocus(state: CardPreviewState): void {
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        if (state.focusExitTimer !== null) {
+          clearTimeout(state.focusExitTimer);
+          state.focusExitTimer = null;
+        }
+        state.inFocus = true;
+        void syncPreview(state);
+        return;
+      }
+
+      state.focusExitTimer = setTimeout(() => {
+        state.focusExitTimer = null;
+        state.inFocus = false;
+        void syncPreview(state);
+      }, FOCUS_EXIT_DELAY_MS);
+    },
+    { rootMargin: FOCUS_ROOT_MARGIN },
   );
 
   observer.observe(state.host);
@@ -269,19 +266,19 @@ export function mountEngramCardPreviews(root: HTMLElement): void {
     }
 
     const state: CardPreviewState = {
-      card,
       host,
       url,
       vesselType: host.dataset.vesselType?.trim() ?? 'lottie',
       inView: false,
-      hovered: false,
+      inFocus: false,
+      focusExitTimer: null,
       lottieAnim: null,
       video: null,
       gifImage: null,
       gifCanvas: null,
     };
 
-    bindCardHover(state);
     bindInView(state);
+    bindInFocus(state);
   }
 }

@@ -35,6 +35,8 @@ export interface LinkEngramParams {
   engramDirectory?: string;
   vesselsDir?: string;
   previousEngramId?: string;
+  /** Compile and write the `.cursor/rules/{id}.mdc` Soul rule. Defaults to true. */
+  syncPersonality?: boolean;
 }
 
 async function readPrebuiltCursorRule(
@@ -114,34 +116,53 @@ export async function linkEngramToWorkspace(params: LinkEngramParams): Promise<L
     }
   }
 
-  const prebuilt = await readPrebuiltCursorRule(engramDirectory, engramId);
-  const prebuiltMatchesSoul =
-    prebuilt &&
-    computeSoulHash(parseCompiledCursorRule(prebuilt).body) === computeSoulHash(loaded.soul);
-  const compiled = prebuiltMatchesSoul
-    ? (() => {
-        const content = setCursorRuleAlwaysApply(prebuilt, true);
-        const { body } = parseCompiledCursorRule(content);
-        return { content, soulHash: computeSoulHash(body) };
-      })()
-    : compileSoulToCursorRule(loaded);
-
+  const syncPersonality = params.syncPersonality ?? true;
   const mdcPath = cursorRulePath(workspaceRoot, engramId);
-  await mkdir(resolve(workspaceRoot, '.cursor', 'rules'), { recursive: true });
-  await writeFile(mdcPath, compiled.content, 'utf8');
+
+  let soulHash: string;
+  if (syncPersonality) {
+    const prebuilt = await readPrebuiltCursorRule(engramDirectory, engramId);
+    const prebuiltMatchesSoul =
+      prebuilt &&
+      computeSoulHash(parseCompiledCursorRule(prebuilt).body) === computeSoulHash(loaded.soul);
+    const compiled = prebuiltMatchesSoul
+      ? (() => {
+          const content = setCursorRuleAlwaysApply(prebuilt, true);
+          const { body } = parseCompiledCursorRule(content);
+          return { content, soulHash: computeSoulHash(body) };
+        })()
+      : compileSoulToCursorRule(loaded);
+
+    await mkdir(resolve(workspaceRoot, '.cursor', 'rules'), { recursive: true });
+    await writeFile(mdcPath, compiled.content, 'utf8');
+    soulHash = compiled.soulHash;
+  } else {
+    soulHash = computeSoulHash(loaded.soul);
+    // Deactivate this engram's own rule too — matters when re-awakening the
+    // same engram with personality toggled off; the "previous" deactivation
+    // above only covers switching to a *different* engram.
+    try {
+      const currentContent = await readFile(mdcPath, 'utf8');
+      await writeFile(mdcPath, setCursorRuleAlwaysApply(currentContent, false), 'utf8');
+    } catch {
+      // No existing rule for this engram — nothing to deactivate.
+    }
+  }
 
   const workspaceConfig = buildWorkspaceConfig({
     engramId,
-    soulHash: compiled.soulHash,
+    soulHash,
     engramsDir,
   });
   await writeWorkspaceConfig(workspaceRoot, workspaceConfig);
 
-  await warnIfStaleSoulCompile({
-    engramDirectory,
-    mdcPath,
-    workspaceConfig,
-  });
+  if (syncPersonality) {
+    await warnIfStaleSoulCompile({
+      engramDirectory,
+      mdcPath,
+      workspaceConfig,
+    });
+  }
 
   return {
     ok: true,

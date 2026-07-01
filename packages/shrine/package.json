@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.server.json && vite build && node scripts/prepare-dist.mjs",
     "check": "tsc --noEmit -p tsconfig.server.json && tsc --noEmit -p tsconfig.renderer.json && vitest run",
-    "dev": "pnpm run build && node dist/server/index.js",
+    "dev": "pnpm run build && node scripts/dev-server.mjs",
     "dev:kill": "node scripts/kill-dev.mjs",
     "start": "node dist/server/index.js",
     "test": "vitest run"

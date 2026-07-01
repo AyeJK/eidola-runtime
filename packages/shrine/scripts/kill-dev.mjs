@@ -1,10 +1,11 @@
 /**
- * Kills whatever process is bound to the Shrine HTTP port (default 9743),
+ * Kills whatever process is bound to the Shrine HTTP port (default: the dev port),
  * for when the background dev server outlived its terminal/agent session.
  */
 import { execSync } from 'node:child_process';
+import { DEV_SHRINE_HTTP_PORT } from './dev-port.mjs';
 
-const port = process.env.EIDOLA_SHRINE_HTTP_PORT?.trim() || '9743';
+const port = process.env.EIDOLA_SHRINE_HTTP_PORT?.trim() || String(DEV_SHRINE_HTTP_PORT);
 
 function findPidsWindows(port) {
   const output = execSync(`netstat -ano`, { encoding: 'utf8' });

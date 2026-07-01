@@ -608,15 +608,19 @@ export class ShrineHttpServer {
   }
 
   private async handleAwaken(req: IncomingMessage, res: ServerResponse): Promise<void> {
-    let body: { engram_id?: string };
+    let body: { engram_id?: string; enable_personality?: boolean };
     try {
-      body = JSON.parse(await readRequestBody(req)) as { engram_id?: string };
+      body = JSON.parse(await readRequestBody(req)) as {
+        engram_id?: string;
+        enable_personality?: boolean;
+      };
     } catch {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: false, error: 'Invalid JSON body.' }));
       return;
     }
 
+    const enablePersonality = body.enable_personality !== false;
     const engramId = body.engram_id?.trim();
     if (!engramId) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -703,17 +707,22 @@ export class ShrineHttpServer {
           engramDirectory: directory,
           vesselsDir,
           previousEngramId: priorConfig?.active_engram_id,
+          syncPersonality: enablePersonality,
         });
         cursorLinked = true;
 
         const previousEngramId = await findActiveSoulImportEngramId(registry.workspace_root);
-        if (previousEngramId && previousEngramId !== engramId) {
+        if (previousEngramId && (previousEngramId !== engramId || !enablePersonality)) {
           await removeSoulFromWorkspace(registry.workspace_root, previousEngramId);
         }
 
-        await copySoulToWorkspace(registry.workspace_root, engramId, loadedSoul);
-        await ensureSoulImport(registry.workspace_root, engramId);
-        claudeMdLinked = true;
+        if (enablePersonality) {
+          await copySoulToWorkspace(registry.workspace_root, engramId, loadedSoul);
+          await ensureSoulImport(registry.workspace_root, engramId);
+          claudeMdLinked = true;
+        } else if (previousEngramId) {
+          await removeSoulImport(registry.workspace_root);
+        }
 
         await writeMcpAwakenSignal({
           engram_id: engramId,
