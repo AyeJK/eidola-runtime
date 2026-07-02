@@ -48,10 +48,15 @@ describe('awaken integration', () => {
   });
 
   it('awakens fixture engram and returns valid Soul injection payload', async () => {
+    // ponytail: isolate EIDOLA_ROOT in a scratch dir rather than the real repoRoot —
+    // inferWorkspaceRoot() falls back to treating repoRoot as the workspace when it
+    // finds a `.cursor/eidola.json` there, which a dogfooded local checkout can have.
+    const isolatedRoot = await mkdtemp(join(tmpdir(), 'eidola-awaken-root-'));
+    tempWorkspace = isolatedRoot;
     const fixture = await createFixtureEngramsDir();
     tempEngramsDir = fixture.engramsDir;
     const config = resolveEidolaRuntimeConfig({
-      EIDOLA_ROOT: repoRoot,
+      EIDOLA_ROOT: isolatedRoot,
       EIDOLA_ENGRAMS_DIR: fixture.engramsDir,
     });
     const session = new SessionState();
