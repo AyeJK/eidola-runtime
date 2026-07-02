@@ -22,6 +22,7 @@ export interface ShrineVesselConfig {
   approvalIdleMs: number;
   successHoldMs: number;
   minHoldMs: number;
+  workingExitHoldMs: number;
 }
 
 export interface ShrineStatePayload {
@@ -49,6 +50,7 @@ export function vesselConfigFromYaml(vessel: VesselConfig, pack: string): Shrine
     approvalIdleMs: vessel.playback.approval_idle_ms ?? 3000,
     successHoldMs: vessel.playback.success_hold_ms ?? 3000,
     minHoldMs: vessel.playback.min_hold_ms ?? 1000,
+    workingExitHoldMs: vessel.playback.working_exit_hold_ms ?? 4000,
   };
 }
 

@@ -21,6 +21,7 @@ function makeConfig(): ShrineVesselConfig {
     approvalIdleMs: 3000,
     successHoldMs: 3000,
     minHoldMs: 1000,
+    workingExitHoldMs: 2500,
   };
 }
 
@@ -154,5 +155,77 @@ describe('VesselPlayer pendingPlay priority', () => {
     player.play(makePayload('thinking', 'thinking'), makeConfig());
 
     expect(getPendingTier(player)).toBe('working');
+  });
+});
+
+describe('VesselPlayer working-exit hold', () => {
+  let root: HTMLElement;
+  let player: VesselPlayer;
+  let setTimeoutSpy: ReturnType<typeof vi.fn>;
+
+  function setCurrentTier(tier: string): void {
+    (player as unknown as { currentVisualTier: string }).currentVisualTier = tier;
+  }
+
+  function armedDelayMs(): number {
+    expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+    return setTimeoutSpy.mock.calls[0]?.[1] as number;
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    // Wrap (rather than replace) setTimeout so calls still go through the
+    // faked clock, letting the test read the scheduled delay off the spy.
+    setTimeoutSpy = vi.fn((cb: () => void, ms?: number) => setTimeout(cb, ms));
+    vi.stubGlobal('window', { setTimeout: setTimeoutSpy, clearTimeout });
+    root = makeStubRoot();
+    player = new VesselPlayer(root);
+    player.setConfig(makeConfig());
+    (player as unknown as { currentStateStartedAt: number }).currentStateStartedAt =
+      performance.now();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it.each(['thinking', 'waiting'])(
+    'holds "working" for workingExitHoldMs before yielding to "%s"',
+    (incoming) => {
+      setCurrentTier('working');
+      player.play(makePayload(incoming), makeConfig());
+
+      // makeConfig() sets workingExitHoldMs: 2500 vs. minHoldMs: 1000 — a
+      // delay above 2000 can only have come from the longer floor.
+      expect(armedDelayMs()).toBeGreaterThan(2000);
+    },
+  );
+
+  it.each(['working', 'searching', 'writing'])(
+    'uses the normal minHoldMs when "thinking" yields back to the busy cluster (%s)',
+    (incoming) => {
+      setCurrentTier('thinking');
+      player.play(makePayload(incoming), makeConfig());
+
+      expect(armedDelayMs()).toBeLessThanOrEqual(1000);
+    },
+  );
+
+  it.each(['error', 'success', 'attention', 'idle', 'responding'])(
+    'uses the normal minHoldMs when "working" transitions straight to %s',
+    (incoming) => {
+      setCurrentTier('working');
+      player.play(makePayload(incoming), makeConfig());
+
+      expect(armedDelayMs()).toBeLessThanOrEqual(1000);
+    },
+  );
+
+  it('does not apply the longer hold in the other direction (waiting -> working)', () => {
+    setCurrentTier('waiting');
+    player.play(makePayload('working'), makeConfig());
+
+    expect(armedDelayMs()).toBeLessThanOrEqual(1000);
   });
 });

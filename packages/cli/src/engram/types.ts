@@ -29,6 +29,12 @@ export interface VesselPlayback {
   success_hold_ms?: number;
   /** Minimum time a visual state must remain on screen before the next can play. Overlay-only; default 1000. */
   min_hold_ms?: number;
+  /**
+   * Minimum time the busy cluster (`working`/`searching`/`writing`) must hold before
+   * yielding to a `thinking`/`waiting` downshift — longer than `min_hold_ms` so brief
+   * gaps between fast tool calls don't flicker back and forth. Overlay-only; default 4000.
+   */
+  working_exit_hold_ms?: number;
 }
 
 export interface VesselConfig {

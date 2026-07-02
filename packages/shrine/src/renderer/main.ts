@@ -31,6 +31,7 @@ const DEFAULT_CONFIG: ShrineVesselConfig = {
   approvalIdleMs: 3000,
   successHoldMs: 3000,
   minHoldMs: 1000,
+  workingExitHoldMs: 4000,
 };
 
 let vesselConfig: ShrineVesselConfig = DEFAULT_CONFIG;
@@ -284,7 +285,6 @@ function runShrine(): void {
   }
 
   async function transitionToIdle(): Promise<void> {
-    applyShrineBackground('idle');
     if (!cachedIdlePayload) {
       return;
     }
@@ -294,7 +294,8 @@ function runShrine(): void {
 
   player.setAutoIdleHandler(() => transitionToIdle());
   player.setVisualTierChangeHandler((payload) => {
-    setHud(payload, payload.broadcast.visual_state ?? payload.broadcast.state);
+    const visualTier = payload.broadcast.visual_state ?? payload.broadcast.state;
+    setHud(payload, visualTier);
   });
 
   function applyHudSubtitle(sub: string): void {
@@ -342,16 +343,6 @@ function runShrine(): void {
     }
   }
 
-  function applyShrineBackground(state: string): void {
-    if (detection.isKrakenBrowser) {
-      document.documentElement.style.setProperty('--shrine-bg', '#000000');
-      return;
-    }
-
-    const color = shrineColorForState(state);
-    document.documentElement.style.setProperty('--shrine-bg', color);
-  }
-
   function shouldRenderVessel(): boolean {
     return detection.isKrakenBrowser || browserAwakened;
   }
@@ -382,8 +373,6 @@ function runShrine(): void {
         return;
       }
     }
-
-    applyShrineBackground(gated.broadcast.state);
 
     const visualTier = resolveVisualTier(gated.broadcast);
 
@@ -421,7 +410,6 @@ function runShrine(): void {
       window.eidolaShrine.log(
         `[renderer] kraken surface locked ${activeSurface?.preset ?? 'kraken-elite-v2'} ${activeSurface?.width ?? 640}×${activeSurface?.height ?? 640}`,
       );
-      applyShrineBackground('idle');
       return;
     }
 
@@ -438,7 +426,6 @@ function runShrine(): void {
     window.eidolaShrine.log(
       `[renderer] active surface ${payload.surface.preset} ${payload.surface.width}×${payload.surface.height}`,
     );
-    applyShrineBackground('idle');
   });
 
   function replayAwakenedState(): boolean {

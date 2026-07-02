@@ -811,8 +811,7 @@ html:not(.shrine-awakened) [data-shrine-vessel] {
   align-items: center;
   justify-content: center;
   padding: 0;
-  background-color: var(--shrine-bg, var(--color-input));
-  transition: background-color var(--crossfade-ms, 300ms) ease-in-out;
+  background-color: var(--color-input);
 }
 
 .vessel-layers {

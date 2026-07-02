@@ -141,6 +141,7 @@ describe('loadEngramFromDirectory', () => {
       approval_idle_ms: 3000,
       success_hold_ms: 3000,
       min_hold_ms: 1000,
+      working_exit_hold_ms: 4000,
     });
     expect(loaded.engram.meta.description).toBeUndefined();
     expect(loaded.engram.meta.tags).toBeUndefined();

@@ -182,6 +182,19 @@ function parseTransitionsAndPlayback(
             );
           })();
 
+  const workingExitHoldMsRaw = playbackRaw.working_exit_hold_ms;
+  const workingExitHoldMs =
+    workingExitHoldMsRaw === undefined
+      ? 4000
+      : typeof workingExitHoldMsRaw === 'number' && !Number.isNaN(workingExitHoldMsRaw)
+        ? workingExitHoldMsRaw
+        : (() => {
+            throw new EngramLoadError(
+              'Field "playback.working_exit_hold_ms" must be a number.',
+              'INVALID_FIELD',
+            );
+          })();
+
   return {
     transitions: { default: defaultTransition, duration_ms: durationMs },
     playback: {
@@ -189,6 +202,7 @@ function parseTransitionsAndPlayback(
       approval_idle_ms: approvalIdleMs,
       success_hold_ms: successHoldMs,
       min_hold_ms: minHoldMs,
+      working_exit_hold_ms: workingExitHoldMs,
     },
   };
 }

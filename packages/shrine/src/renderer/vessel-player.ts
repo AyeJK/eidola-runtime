@@ -21,6 +21,7 @@ export class VesselPlayer {
   private mediaType: 'lottie' | 'webm' | 'gif' = 'lottie';
   private crossfadeMs = 300;
   private minHoldMs = 1000;
+  private workingExitHoldMs = 4000;
   private idlePayload: ShrineStatePayload | null = null;
   private autoIdleHandler: (() => void | Promise<void>) | null = null;
   private currentClipUrl = '';
@@ -45,6 +46,7 @@ export class VesselPlayer {
   setConfig(config: ShrineVesselConfig): void {
     this.crossfadeMs = config.crossfadeMs;
     this.minHoldMs = config.minHoldMs;
+    this.workingExitHoldMs = config.workingExitHoldMs;
     this.mediaType =
       config.rendererType === 'webm'
         ? 'webm'
@@ -90,7 +92,8 @@ export class VesselPlayer {
     }
 
     const elapsed = performance.now() - this.currentStateStartedAt;
-    if (elapsed < this.minHoldMs) {
+    const holdMs = this.resolveHoldMs(this.currentVisualTier, visualTier);
+    if (elapsed < holdMs) {
       this.setPendingPlay(payload, config);
       if (this.holdTimer === null) {
         this.holdTimer = window.setTimeout(() => {
@@ -100,7 +103,7 @@ export class VesselPlayer {
           if (next) {
             void this.play(next.payload, next.config);
           }
-        }, this.minHoldMs - elapsed);
+        }, holdMs - elapsed);
       }
       return this.currentPlay;
     }
@@ -115,6 +118,22 @@ export class VesselPlayer {
       }
     });
     return this.currentPlay;
+  }
+
+  /**
+   * `working` gets a longer floor than the generic `minHoldMs` before it's
+   * allowed to yield to `thinking`/`waiting` — those two are the tool-adjacent
+   * "what's next" tiers the broadcaster falls back to between fast tool calls
+   * (see `DEFAULT_THINKING_GRACE_MS`), and without this, every brief gap
+   * between tools flickers `working` → `thinking`/`waiting` → `working`. Every
+   * other transition (into `working` itself, or into `error`/`success`/
+   * `attention`/`idle`/`responding`) keeps reacting at the normal `minHoldMs`.
+   */
+  private resolveHoldMs(fromTier: string, toTier: string): number {
+    if (fromTier === 'working' && (toTier === 'thinking' || toTier === 'waiting')) {
+      return this.workingExitHoldMs;
+    }
+    return this.minHoldMs;
   }
 
   /**

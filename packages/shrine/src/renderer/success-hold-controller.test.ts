@@ -11,6 +11,7 @@ const vesselConfig: ShrineVesselConfig = {
   approvalIdleMs: 3000,
   successHoldMs: 2000,
   minHoldMs: 500,
+  workingExitHoldMs: 2500,
 };
 
 function socketPayload(state: string): ShrineStatePayload {
