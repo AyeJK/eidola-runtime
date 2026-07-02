@@ -1,11 +1,13 @@
 /**
- * Assembles a standalone `eidola` npm package in packages/mcp/dist:
+ * Assembles packages/cli/dist, published as a subfolder of @eidola/cli
+ * (never as its own package root — see packages/cli/package.json for the
+ * canonical main/bin/exports, all dist/-prefixed):
  * - Bundles @eidola/tool-state (no separate publish)
  * - Copies @eidola/shrine server + Vite renderer into dist/shrine/
  *
  * Shrine bundling decision (Sprint 4.2.1): bundle-all in one package.
  * Three.js and Lottie ship inside the prebuilt renderer assets (~few MB);
- * no peer @eidola/shrine publish — User install stays `npm install -g eidola`.
+ * no peer @eidola/shrine publish — User install stays `npm install -g @eidola/cli`.
  */
 import { cp, mkdir, readFile, readdir, rm, writeFile, access } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -157,49 +159,6 @@ async function patchShrineMcpImports() {
   }
 }
 
-async function writePublishManifest() {
-  const sourcePkg = JSON.parse(await readFile(join(mcpRoot, 'package.json'), 'utf8'));
-  const publishPkg = {
-    name: sourcePkg.name,
-    version: sourcePkg.version,
-    type: sourcePkg.type,
-    description: sourcePkg.description,
-    license: sourcePkg.license,
-    keywords: sourcePkg.keywords,
-    main: 'index.js',
-    types: 'index.d.ts',
-    bin: { eidola: 'cli.js' },
-    exports: {
-      '.': {
-        types: './index.d.ts',
-        import: './index.js',
-      },
-      './server': {
-        types: './server.d.ts',
-        import: './server.js',
-      },
-    },
-    dependencies: { ...sourcePkg.dependencies },
-    engines: sourcePkg.engines,
-  };
-
-  for (const section of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
-    if (!(section in publishPkg)) {
-      continue;
-    }
-    for (const [name, version] of Object.entries(publishPkg[section])) {
-      if (String(version).startsWith('workspace:')) {
-        delete publishPkg[section][name];
-      }
-    }
-    if (Object.keys(publishPkg[section]).length === 0) {
-      delete publishPkg[section];
-    }
-  }
-
-  await writeFile(join(distRoot, 'package.json'), `${JSON.stringify(publishPkg, null, 2)}\n`, 'utf8');
-}
-
 async function main() {
   run('pnpm', ['--filter', '@eidola/tool-state', 'run', 'build'], repoRoot);
   run('pnpm', ['--filter', '@eidola/cursor-hooks', 'run', 'build'], repoRoot);
@@ -235,10 +194,7 @@ async function main() {
   ]) {
     await rm(join(shrineDist, 'server', name), { force: true });
   }
-  await writePublishManifest();
-  await cp(join(mcpRoot, 'README.md'), join(distRoot, 'README.md'));
-
-  console.log('[prepare-dist] standalone dist ready at', distRoot);
+  console.log('[prepare-dist] dist ready at', distRoot);
 }
 
 main().catch((error) => {
