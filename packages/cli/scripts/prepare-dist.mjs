@@ -71,6 +71,44 @@ async function patchVendorToolState() {
   await copyDir(join(toolStateRoot, 'dist'), join(distRoot, 'vendor', 'tool-state-pkg'));
 }
 
+async function writePublishManifest() {
+  const sourcePkg = JSON.parse(await readFile(join(mcpRoot, 'package.json'), 'utf8'));
+  const publishPkg = {
+    name: sourcePkg.name,
+    version: sourcePkg.version,
+    type: sourcePkg.type,
+    description: sourcePkg.description,
+    license: sourcePkg.license,
+    publishConfig: sourcePkg.publishConfig,
+    keywords: sourcePkg.keywords,
+    main: 'index.js',
+    types: 'index.d.ts',
+    bin: { eidola: 'cli.js' },
+    exports: {
+      '.': { types: './index.d.ts', import: './index.js' },
+      './server': { types: './server.d.ts', import: './server.js' },
+    },
+    dependencies: { ...sourcePkg.dependencies },
+    engines: sourcePkg.engines,
+  };
+
+  for (const section of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
+    if (!(section in publishPkg)) {
+      continue;
+    }
+    for (const [name, version] of Object.entries(publishPkg[section])) {
+      if (String(version).startsWith('workspace:')) {
+        delete publishPkg[section][name];
+      }
+    }
+    if (Object.keys(publishPkg[section]).length === 0) {
+      delete publishPkg[section];
+    }
+  }
+
+  await writeFile(join(distRoot, 'package.json'), `${JSON.stringify(publishPkg, null, 2)}\n`, 'utf8');
+}
+
 async function fileExists(path) {
   try {
     await access(path);
@@ -194,6 +232,7 @@ async function main() {
   ]) {
     await rm(join(shrineDist, 'server', name), { force: true });
   }
+  await writePublishManifest();
   console.log('[prepare-dist] dist ready at', distRoot);
 }
 
