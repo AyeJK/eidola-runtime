@@ -112,3 +112,48 @@ export function serializeInbound(event: StateInboundEvent): string {
 export function isValidSurface(value: string): value is Surface {
   return (SURFACES as readonly string[]).includes(value);
 }
+
+/**
+ * Sent by an MCP process that just awakened an Engram but doesn't currently
+ * own the state socket. Distinct shape from `StateInboundEvent` (no
+ * `protocol_version`/`state`) so it's cheap to tell apart on the wire — the
+ * owner releases its listener on receipt so the claimant can take over as
+ * the "last awakened wins" socket owner.
+ */
+export interface ClaimSocketMessage {
+  type: 'claim_socket';
+  ts: number;
+}
+
+export function createClaimMessage(ts: number = Date.now()): ClaimSocketMessage {
+  return { type: 'claim_socket', ts };
+}
+
+export function serializeClaim(message: ClaimSocketMessage): string {
+  return `${JSON.stringify(message)}\n`;
+}
+
+export function parseClaimLine(line: string): ClaimSocketMessage | null {
+  const trimmed = line.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+
+  if (
+    parsed !== null &&
+    typeof parsed === 'object' &&
+    (parsed as { type?: unknown }).type === 'claim_socket' &&
+    typeof (parsed as { ts?: unknown }).ts === 'number'
+  ) {
+    return parsed as ClaimSocketMessage;
+  }
+
+  return null;
+}

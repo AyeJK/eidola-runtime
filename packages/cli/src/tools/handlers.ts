@@ -122,6 +122,10 @@ async function handleAwaken(
     const soulSource = await detectSoulSource(config.workspaceRoot, engramId);
     const loaded = await session.load(directory, soulSource);
     const soulInjection = buildSoulInjectionPayload(loaded.engram.id, loaded.soul);
+    // Whichever workspace last awakened an Engram should drive the Shrine —
+    // claim the state socket from any other live eidola-mcp instance before
+    // broadcasting, so this session's engram_id is what actually renders.
+    await stateSocket?.claimOwnership();
     const broadcast = stateSocket?.broadcastState({ state: 'idle', surface: 'manual' });
     const shrineSync = await postShrineAwaken(engramId, config.workspaceRoot);
 

@@ -4,10 +4,13 @@ import type { SessionState } from '../session/state.js';
 import { resolveExpressionClip } from './expression.js';
 import {
   createBroadcast,
+  createClaimMessage,
   createInboundEvent,
   normalizeInbound,
+  parseClaimLine,
   parseInboundLine,
   serializeBroadcast,
+  serializeClaim,
   serializeInbound,
 } from './protocol.js';
 import {
@@ -32,6 +35,13 @@ export interface StateSocketListenResult {
 
 export interface StateSocketServer {
   start(): Promise<StateSocketListenResult>;
+  /**
+   * Like `start()`, but if another eidola-mcp instance already owns the
+   * socket, asks it to release the port first ("last awakened wins") before
+   * retrying. Falls back to a non-listening result if the existing owner
+   * never releases in time.
+   */
+  claimOwnership(): Promise<StateSocketListenResult>;
   close(): Promise<void>;
   isListening(): boolean;
   broadcastState(input: {
@@ -246,6 +256,13 @@ export function createStateSocketServer(
     pendingLines.set(socket, pending);
 
     for (const line of lines) {
+      if (parseClaimLine(line)) {
+        // A freshly-awakened instance wants the socket — "last awakened
+        // wins". Release it; the claimant retries binding on its end.
+        void releaseServerOnly();
+        continue;
+      }
+
       const event = parseInboundLine(line);
       if (!event) {
         if (line.trim()) {
@@ -297,56 +314,139 @@ export function createStateSocketServer(
     });
   };
 
+  /** Stops accepting connections without touching turn/dedupe state — used
+   * both by a full `close()` and by claim handoff, where this instance keeps
+   * running (session intact) and may reclaim the socket again later. */
+  const releaseServerOnly = async (): Promise<void> => {
+    for (const client of clients) {
+      client.destroy();
+    }
+    clients.clear();
+
+    if (!server) {
+      listening = false;
+      return;
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      server!.close((error) => (error ? reject(error) : resolve()));
+    });
+    server = null;
+    listening = false;
+  };
+
+  const attemptStart = async (): Promise<StateSocketListenResult> => {
+    if (server && listening) {
+      const address = server.address();
+      if (address && typeof address === 'object') {
+        return { host: address.address, port: address.port, listening: true };
+      }
+    }
+
+    server = createServer((socket) => attachClient(socket));
+
+    let addrInUse = false;
+    await new Promise<void>((resolve, reject) => {
+      server!.once('error', (error: NodeJS.ErrnoException) => {
+        if (error.code === 'EADDRINUSE') {
+          addrInUse = true;
+          server?.close();
+          server = null;
+          listening = false;
+          resolve();
+          return;
+        }
+        reject(error);
+      });
+      server!.listen(requestedPort, host, () => resolve());
+    });
+
+    if (addrInUse) {
+      return { host, port: requestedPort, listening: false };
+    }
+
+    const address = server!.address();
+    if (!address || typeof address !== 'object') {
+      throw new Error('State socket failed to bind');
+    }
+
+    if (address.address !== '127.0.0.1' && address.address !== '::1') {
+      throw new Error(`State socket must bind localhost only; got ${address.address}`);
+    }
+
+    listening = true;
+    return { host: address.address, port: address.port, listening: true };
+  };
+
+  /**
+   * Sends a claim message to whoever currently owns the socket and waits for
+   * them to release it (their end closing this connection), or a short
+   * timeout — whichever comes first. Best-effort: an owner that never
+   * responds (e.g. a pre-claim-protocol build) just times out and the caller
+   * falls back to non-owning behavior, same as before this existed.
+   */
+  const requestTakeover = (timeoutMs = 500): Promise<void> => {
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timer);
+        socket.destroy();
+        resolve();
+      };
+
+      const timer = setTimeout(finish, timeoutMs);
+      const socket = connect({ host, port: requestedPort }, () => {
+        socket.write(serializeClaim(createClaimMessage()));
+      });
+      socket.on('close', finish);
+      socket.on('error', finish);
+    });
+  };
+
   return {
     isListening(): boolean {
       return listening;
     },
 
     async start(): Promise<StateSocketListenResult> {
-      if (server && listening) {
-        const address = server.address();
-        if (address && typeof address === 'object') {
-          return { host: address.address, port: address.port, listening: true };
-        }
-      }
-
-      server = createServer((socket) => attachClient(socket));
-
-      let addrInUse = false;
-      await new Promise<void>((resolve, reject) => {
-        server!.once('error', (error: NodeJS.ErrnoException) => {
-          if (error.code === 'EADDRINUSE') {
-            addrInUse = true;
-            server?.close();
-            server = null;
-            listening = false;
-            resolve();
-            return;
-          }
-          reject(error);
-        });
-        server!.listen(requestedPort, host, () => resolve());
-      });
-
-      if (addrInUse) {
+      const result = await attemptStart();
+      if (!result.listening) {
         warn(
           `state socket ${host}:${requestedPort} already in use — MCP tools active; ` +
             'stop other eidola-mcp processes so one instance owns the socket and overlay sync.',
         );
-        return { host, port: requestedPort, listening: false };
+      }
+      return result;
+    },
+
+    async claimOwnership(): Promise<StateSocketListenResult> {
+      if (listening) {
+        return attemptStart();
       }
 
-      const address = server!.address();
-      if (!address || typeof address !== 'object') {
-        throw new Error('State socket failed to bind');
+      await requestTakeover();
+
+      // The owner's release is async on their end (socket teardown, then
+      // server.close()'s callback) — a few short retries absorbs that race
+      // without the claimant blocking for long on the common case.
+      let result = await attemptStart();
+      for (let attempt = 0; !result.listening && attempt < 4; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        result = await attemptStart();
       }
 
-      if (address.address !== '127.0.0.1' && address.address !== '::1') {
-        throw new Error(`State socket must bind localhost only; got ${address.address}`);
+      if (!result.listening) {
+        warn(
+          `state socket ${host}:${requestedPort} claim failed — existing owner did not release; ` +
+            'falling back to forwarding state to it.',
+        );
       }
 
-      listening = true;
-      return { host: address.address, port: address.port, listening: true };
+      return result;
     },
 
     async close(): Promise<void> {
@@ -357,20 +457,7 @@ export function createStateSocketServer(
       visualTurn.clearGraceTimer();
       lastBroadcastKey = null;
 
-      for (const client of clients) {
-        client.destroy();
-      }
-      clients.clear();
-
-      if (!server) {
-        return;
-      }
-
-      await new Promise<void>((resolve, reject) => {
-        server!.close((error) => (error ? reject(error) : resolve()));
-      });
-      server = null;
-      listening = false;
+      await releaseServerOnly();
     },
 
     broadcastState(input): StateBroadcast {
