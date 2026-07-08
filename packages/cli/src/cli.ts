@@ -8,7 +8,8 @@ Usage:
   eidola kill shrine          Stop a running Shrine HTTP server
   eidola setup-cursor         Add MCP server + install hooks for Cursor (workspace-scoped; --global for ~/.cursor)
   eidola setup-claude         Add MCP server + install hooks for Claude Code (workspace-scoped; --global for ~/.claude)
-  eidola uninstall            Remove MCP server + hooks + active Engram artifacts (workspace-scoped; --global for home dir)
+  eidola uninstall            Remove MCP server + hooks + active Engram artifacts, then uninstall the npm package itself
+                               (config is workspace-scoped; --global for home dir; --keep-package skips the npm removal)
 `;
 
 async function main(): Promise<void> {
@@ -136,8 +137,24 @@ async function main(): Promise<void> {
       for (const line of removed) {
         console.log(`  ${line}`);
       }
-      console.log('Restart your editor(s) so the change takes effect.');
     }
+
+    if (process.argv.includes('--keep-package')) {
+      console.log('Restart your editor(s) so the change takes effect.');
+      return;
+    }
+
+    const { uninstallNpmPackage } = await import('./uninstall-npm-package.js');
+    console.log('Removing the @eidola/cli npm package...');
+    const npmResult = await uninstallNpmPackage();
+    if (npmResult.ok) {
+      console.log('npm package removed (or was already absent).');
+    } else {
+      console.error(`Failed to remove the npm package automatically: ${npmResult.output}`);
+      console.error('Remove it yourself with: npm uninstall -g @eidola/cli');
+    }
+
+    console.log('Restart your editor(s) so the change takes effect.');
     return;
   }
 
