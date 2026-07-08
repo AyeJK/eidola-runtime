@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 import { writeFixtureEngram } from '../integration/local-engram-fixture.js';
-import { deactivateEngramInWorkspace } from './deactivate-engram.js';
+import { removeEngramFromWorkspace } from './remove-engram.js';
 import { linkEngramToWorkspace } from './link-engram.js';
 import { cursorRulePath, readWorkspaceConfig, workspaceConfigPath } from './workspace-config.js';
 
@@ -16,7 +16,7 @@ async function pathExists(path: string): Promise<boolean> {
   }
 }
 
-describe('deactivateEngramInWorkspace', () => {
+describe('removeEngramFromWorkspace', () => {
   let tempWorkspace: string | null = null;
   let tempEngrams: string | null = null;
 
@@ -31,9 +31,9 @@ describe('deactivateEngramInWorkspace', () => {
     }
   });
 
-  it('flips alwaysApply to false and clears active_engram_id', async () => {
-    tempWorkspace = await mkdtemp(join(tmpdir(), 'eidola-deactivate-'));
-    tempEngrams = await mkdtemp(join(tmpdir(), 'eidola-deactivate-engrams-'));
+  it('deletes the .mdc and clears active_engram_id', async () => {
+    tempWorkspace = await mkdtemp(join(tmpdir(), 'eidola-remove-engram-'));
+    tempEngrams = await mkdtemp(join(tmpdir(), 'eidola-remove-engram-engrams-'));
     await mkdir(tempEngrams, { recursive: true });
     await writeFixtureEngram(tempEngrams, 'fixture-engram');
 
@@ -43,31 +43,29 @@ describe('deactivateEngramInWorkspace', () => {
       engramsDir: tempEngrams,
     });
 
-    const result = await deactivateEngramInWorkspace(tempWorkspace, 'fixture-engram');
+    const result = await removeEngramFromWorkspace(tempWorkspace, 'fixture-engram');
     expect(result.ok).toBe(true);
-    expect(result.mdcDeactivated).toBe(true);
+    expect(result.mdcRemoved).toBe(true);
     expect(result.configCleared).toBe(true);
 
-    const mdc = await readFile(cursorRulePath(tempWorkspace, 'fixture-engram'), 'utf8');
-    expect(mdc).toContain('alwaysApply: false');
-
+    await expect(pathExists(cursorRulePath(tempWorkspace, 'fixture-engram'))).resolves.toBe(false);
     await expect(readWorkspaceConfig(tempWorkspace)).resolves.toBeNull();
   });
 
   it('no-ops when nothing is active', async () => {
-    tempWorkspace = await mkdtemp(join(tmpdir(), 'eidola-deactivate-noop-'));
+    tempWorkspace = await mkdtemp(join(tmpdir(), 'eidola-remove-engram-noop-'));
 
-    const result = await deactivateEngramInWorkspace(tempWorkspace, 'never-awoken');
+    const result = await removeEngramFromWorkspace(tempWorkspace, 'never-awoken');
     expect(result.ok).toBe(true);
-    expect(result.mdcDeactivated).toBe(false);
+    expect(result.mdcRemoved).toBe(false);
     expect(result.configCleared).toBe(false);
 
     await expect(pathExists(workspaceConfigPath(tempWorkspace))).resolves.toBe(false);
   });
 
   it('does not clear config when a different Engram is active', async () => {
-    tempWorkspace = await mkdtemp(join(tmpdir(), 'eidola-deactivate-other-'));
-    tempEngrams = await mkdtemp(join(tmpdir(), 'eidola-deactivate-other-engrams-'));
+    tempWorkspace = await mkdtemp(join(tmpdir(), 'eidola-remove-engram-other-'));
+    tempEngrams = await mkdtemp(join(tmpdir(), 'eidola-remove-engram-other-engrams-'));
     await mkdir(tempEngrams, { recursive: true });
     await writeFixtureEngram(tempEngrams, 'fixture-engram');
 
@@ -77,8 +75,8 @@ describe('deactivateEngramInWorkspace', () => {
       engramsDir: tempEngrams,
     });
 
-    const result = await deactivateEngramInWorkspace(tempWorkspace, 'some-other-engram');
-    expect(result.mdcDeactivated).toBe(false);
+    const result = await removeEngramFromWorkspace(tempWorkspace, 'some-other-engram');
+    expect(result.mdcRemoved).toBe(false);
     expect(result.configCleared).toBe(false);
 
     const config = await readWorkspaceConfig(tempWorkspace);

@@ -7,7 +7,7 @@ import {
   removeSoulImport,
 } from '../claude/claude-md.js';
 import { detectClient, type ClientInfoLike } from '../client-detect.js';
-import { deactivateEngramInWorkspace } from '../cursor/deactivate-engram.js';
+import { removeEngramFromWorkspace } from '../cursor/remove-engram.js';
 import { launchShrine } from '../cursor/ensure-shrine.js';
 import { linkEngramToWorkspace } from '../cursor/link-engram.js';
 import { postShrineAwaken, postShrineSleep } from '../cursor/shrine-awaken.js';
@@ -97,14 +97,8 @@ async function handleAwaken(
 
       if (linkClaudeCode) {
         // Switching Engrams on Claude Code deletes the previous Engram's
-        // soul file rather than orphaning it. This is a deliberate
-        // asymmetry with Cursor: Cursor's `.mdc` deactivates in place
-        // (`alwaysApply: false`) and is kept as a visible, cheap audit
-        // trail of what was previously active. Claude Code's import-or-
-        // nothing model (a single marker block pointing at one soul file)
-        // has no equivalent "inert but present" state worth keeping —
-        // once the marker block is repointed, the old soul file is just
-        // dead weight, so it's removed outright.
+        // soul file rather than orphaning it — matches Cursor, which deletes
+        // the previous Engram's `.mdc` on switch (see link-engram.ts).
         const previousEngramId = await findActiveSoulImportEngramId(config.workspaceRoot);
         if (previousEngramId && previousEngramId !== engramId) {
           await removeSoulFromWorkspace(config.workspaceRoot, previousEngramId);
@@ -184,8 +178,8 @@ async function handleSleep(
       const sleepClaudeCode = detectedClient === 'claude_code' || detectedClient === 'unknown';
 
       if (sleepCursor) {
-        const result = await deactivateEngramInWorkspace(config.workspaceRoot, engramId);
-        cursorDeactivated = result.mdcDeactivated || result.configCleared;
+        const result = await removeEngramFromWorkspace(config.workspaceRoot, engramId);
+        cursorDeactivated = result.mdcRemoved || result.configCleared;
       }
 
       if (sleepClaudeCode) {

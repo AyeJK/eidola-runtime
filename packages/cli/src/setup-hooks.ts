@@ -9,7 +9,7 @@ export interface CursorHooksTemplate {
 }
 
 export interface SetupCursorHooksOptions {
-  /** When true, write to ~/.cursor/hooks.json. Default true. */
+  /** When true, write to ~/.cursor/hooks.json. Default false (workspace-scoped). */
   global?: boolean;
   /** Project workspace root when global is false. */
   workspaceRoot?: string;
@@ -36,7 +36,7 @@ export function defaultHooksTemplatePath(): string {
   return join(resolveCliPackageRoot(), 'cursor-hooks', 'templates', 'hooks.json');
 }
 
-function isEidolaRelayCommand(command: unknown): boolean {
+export function isEidolaRelayCommand(command: unknown): boolean {
   if (typeof command !== 'string') {
     return false;
   }
@@ -77,7 +77,7 @@ export function mergeCursorHooksConfig(
 export async function setupCursorHooks(
   options: SetupCursorHooksOptions = {},
 ): Promise<SetupCursorHooksResult> {
-  const global = options.global !== false;
+  const global = options.global === true;
   const workspaceRoot = options.workspaceRoot
     ? resolve(options.workspaceRoot)
     : resolve(process.cwd());

@@ -23,7 +23,7 @@ export interface ClaudeSettings {
 }
 
 export interface SetupClaudeHooksOptions {
-  /** When true, write to ~/.claude/settings.json. Default true. */
+  /** When true, write to ~/.claude/settings.json. Default false (workspace-scoped). */
   global?: boolean;
   /** Project workspace root when global is false. */
   workspaceRoot?: string;
@@ -50,7 +50,7 @@ export function defaultClaudeHooksTemplatePath(): string {
   return join(resolveCliPackageRoot(), 'claude-hooks', 'templates', 'hooks.json');
 }
 
-function isEidolaRelayCommand(command: unknown, hookName?: string): boolean {
+export function isEidolaRelayCommand(command: unknown, hookName?: string): boolean {
   if (typeof command !== 'string') {
     return false;
   }
@@ -109,7 +109,7 @@ export function mergeClaudeHooksConfig(
 export async function setupClaudeHooks(
   options: SetupClaudeHooksOptions = {},
 ): Promise<SetupClaudeHooksResult> {
-  const global = options.global !== false;
+  const global = options.global === true;
   const workspaceRoot = options.workspaceRoot
     ? resolve(options.workspaceRoot)
     : resolve(process.cwd());

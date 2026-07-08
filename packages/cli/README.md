@@ -33,8 +33,8 @@ eidola setup-cursor   # Cursor
 ```
 
 `setup-claude` writes the MCP server entry and hook relay config into
-`~/.claude/settings.json`. `setup-cursor` writes the MCP server entry to
-`~/.cursor/mcp.json` plus the hook relay config — equivalent to:
+`.claude/settings.json`. `setup-cursor` writes the MCP server entry to
+`.cursor/mcp.json` plus the hook relay config — equivalent to:
 
 ```json
 {
@@ -50,8 +50,8 @@ eidola setup-cursor   # Cursor
 }
 ```
 
-Either command writes to your home directory by default; pass `--project`
-to scope it to the current workspace instead.
+Either command writes to the current workspace by default; pass `--global`
+to install to your home directory instead.
 
 ### 3. Launch the Shrine
 
@@ -77,8 +77,9 @@ You can do the same thing from chat instead — ask your agent to "Awaken
 | `eidola mcp` | MCP server over stdio |
 | `eidola launch shrine` | Start Shrine HTTP server at `http://127.0.0.1:9743/shrine` |
 | `eidola kill shrine` | Stop a running Shrine HTTP server |
-| `eidola setup-cursor [--project]` | Add Eidola MCP server to Cursor + install hooks for a reactive Vessel (global by default; `--project` for workspace-local) |
-| `eidola setup-claude [--project]` | Add Eidola MCP server to Claude Code + install hooks for a reactive Vessel (global by default; `--project` for workspace-local) |
+| `eidola setup-cursor [--global]` | Add Eidola MCP server to Cursor + install hooks for a reactive Vessel (workspace-scoped by default; `--global` for `~/.cursor`) |
+| `eidola setup-claude [--global]` | Add Eidola MCP server to Claude Code + install hooks for a reactive Vessel (workspace-scoped by default; `--global` for `~/.claude`) |
+| `eidola uninstall [--global]` | Remove the Eidola MCP server entry + hooks from Cursor and Claude Code (workspace-scoped by default; `--global` to remove the home-directory install), plus any `awaken`-written personality files still active in the workspace |
 
 ## MCP tools
 

@@ -6,8 +6,9 @@ Usage:
   eidola mcp                  Start MCP server (stdio)
   eidola launch shrine        Start Shrine HTTP server
   eidola kill shrine          Stop a running Shrine HTTP server
-  eidola setup-cursor         Add MCP server + install hooks for Cursor
-  eidola setup-claude         Add MCP server + install hooks for Claude Code
+  eidola setup-cursor         Add MCP server + install hooks for Cursor (workspace-scoped; --global for ~/.cursor)
+  eidola setup-claude         Add MCP server + install hooks for Claude Code (workspace-scoped; --global for ~/.claude)
+  eidola uninstall            Remove MCP server + hooks + active Engram artifacts (workspace-scoped; --global for home dir)
 `;
 
 async function main(): Promise<void> {
@@ -84,9 +85,9 @@ async function main(): Promise<void> {
   if (subcommand === 'setup-cursor') {
     const { setupCursorMcp } = await import('./setup-cursor-mcp.js');
     const { setupCursorHooks } = await import('./setup-hooks.js');
-    const projectMode = process.argv.includes('--project');
-    const mcpResult = await setupCursorMcp({ global: !projectMode });
-    const hooksResult = await setupCursorHooks({ global: !projectMode });
+    const globalMode = process.argv.includes('--global');
+    const mcpResult = await setupCursorMcp({ global: globalMode });
+    const hooksResult = await setupCursorHooks({ global: globalMode });
     console.log(`MCP   → ${mcpResult.mcpPath}`);
     console.log(`Hooks → ${hooksResult.hooksPath}`);
     console.log('Restart Cursor so the MCP server connects and hooks reload.');
@@ -96,12 +97,47 @@ async function main(): Promise<void> {
   if (subcommand === 'setup-claude') {
     const { setupClaudeMcp } = await import('./setup-claude-mcp.js');
     const { setupClaudeHooks } = await import('./setup-claude-hooks.js');
-    const projectMode = process.argv.includes('--project');
-    const mcpResult = await setupClaudeMcp({ global: !projectMode });
-    const hooksResult = await setupClaudeHooks({ global: !projectMode });
+    const globalMode = process.argv.includes('--global');
+    const mcpResult = await setupClaudeMcp({ global: globalMode });
+    const hooksResult = await setupClaudeHooks({ global: globalMode });
     console.log(`MCP   → ${mcpResult.settingsPath}`);
     console.log(`Hooks → ${hooksResult.settingsPath}`);
     console.log('Restart Claude Code so the MCP server connects and hooks reload.');
+    return;
+  }
+
+  if (subcommand === 'uninstall') {
+    const { uninstallCursorMcp, uninstallCursorHooks } = await import('./uninstall-cursor.js');
+    const { uninstallClaudeMcp, uninstallClaudeHooks } = await import('./uninstall-claude.js');
+    const { uninstallCursorEngramArtifacts, uninstallClaudeEngramArtifacts } = await import(
+      './uninstall-workspace.js'
+    );
+    const globalMode = process.argv.includes('--global');
+
+    const cursorMcp = await uninstallCursorMcp({ global: globalMode });
+    const cursorHooks = await uninstallCursorHooks({ global: globalMode });
+    const claudeMcp = await uninstallClaudeMcp({ global: globalMode });
+    const claudeHooks = await uninstallClaudeHooks({ global: globalMode });
+    const cursorEngram = await uninstallCursorEngramArtifacts();
+    const claudeEngram = await uninstallClaudeEngramArtifacts();
+
+    const removed: string[] = [];
+    if (cursorMcp.removed) removed.push(`MCP   → ${cursorMcp.mcpPath}`);
+    if (cursorHooks.removed) removed.push(`Hooks → ${cursorHooks.hooksPath}`);
+    if (claudeMcp.removed) removed.push(`MCP   → ${claudeMcp.settingsPath}`);
+    if (claudeHooks.removed) removed.push(`Hooks → ${claudeHooks.settingsPath}`);
+    if (cursorEngram.removed) removed.push(`Engram → ${cursorEngram.mdcPath ?? cursorEngram.configPath}`);
+    if (claudeEngram.removed) removed.push(`Engram → ${claudeEngram.soulPath ?? claudeEngram.claudeMdPath}`);
+
+    if (removed.length === 0) {
+      console.log('Nothing to uninstall — no Eidola entries found.');
+    } else {
+      console.log('Removed:');
+      for (const line of removed) {
+        console.log(`  ${line}`);
+      }
+      console.log('Restart your editor(s) so the change takes effect.');
+    }
     return;
   }
 

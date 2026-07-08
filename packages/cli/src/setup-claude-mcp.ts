@@ -14,7 +14,7 @@ export interface ClaudeMcpSettings {
 }
 
 export interface SetupClaudeMcpOptions {
-  /** When true, write to ~/.claude/settings.json. Default true. */
+  /** When true, write to ~/.claude/settings.json. Default false (workspace-scoped). */
   global?: boolean;
   /** Project workspace root when global is false. */
   workspaceRoot?: string;
@@ -32,7 +32,7 @@ const EIDOLA_MCP_ENTRY: ClaudeMcpServerEntry = {
 export async function setupClaudeMcp(
   options: SetupClaudeMcpOptions = {},
 ): Promise<SetupClaudeMcpResult> {
-  const useGlobal = options.global !== false;
+  const useGlobal = options.global === true;
   const targetDir = useGlobal
     ? join(homedir(), '.claude')
     : join(options.workspaceRoot ?? process.cwd(), '.claude');

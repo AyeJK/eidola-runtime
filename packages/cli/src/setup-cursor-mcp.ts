@@ -15,7 +15,7 @@ export interface CursorMcpSettings {
 }
 
 export interface SetupCursorMcpOptions {
-  /** When true, write to ~/.cursor/mcp.json. Default true. */
+  /** When true, write to ~/.cursor/mcp.json. Default false (workspace-scoped). */
   global?: boolean;
   /** Project workspace root when global is false. */
   workspaceRoot?: string;
@@ -36,7 +36,7 @@ const EIDOLA_MCP_ENTRY: CursorMcpServerEntry = {
 export async function setupCursorMcp(
   options: SetupCursorMcpOptions = {},
 ): Promise<SetupCursorMcpResult> {
-  const useGlobal = options.global !== false;
+  const useGlobal = options.global === true;
   const targetDir = useGlobal
     ? join(homedir(), '.cursor')
     : join(resolve(options.workspaceRoot ?? process.cwd()), '.cursor');

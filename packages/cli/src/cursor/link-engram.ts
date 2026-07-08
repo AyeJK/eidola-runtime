@@ -1,4 +1,4 @@
-import { access, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, readdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { loadEngramFromDirectory } from '../engram/loader.js';
 import { resolveEngramLocation } from '../engram/registry.js';
@@ -25,7 +25,7 @@ export interface LinkEngramResult {
   workspaceConfigPath: string;
   engramDirectory: string;
   previousEngramId?: string;
-  deactivatedPrevious: boolean;
+  removedPrevious: boolean;
 }
 
 export interface LinkEngramParams {
@@ -100,18 +100,20 @@ export async function linkEngramToWorkspace(params: LinkEngramParams): Promise<L
   const previousEngramId =
     params.previousEngramId?.trim() || priorConfig?.active_engram_id?.trim() || undefined;
 
-  let deactivatedPrevious = false;
+  // Switching to a different Engram deletes the previous one's rule outright
+  // rather than deactivating it in place — matches Claude Code, which
+  // deletes the outgoing soul file on switch (see handlers.ts).
+  let removedPrevious = false;
   if (previousEngramId && previousEngramId !== engramId) {
     const previousMdcPath = cursorRulePath(workspaceRoot, previousEngramId);
     try {
-      const previousContent = await readFile(previousMdcPath, 'utf8');
-      await writeFile(
-        previousMdcPath,
-        setCursorRuleAlwaysApply(previousContent, false),
-        'utf8',
-      );
-      deactivatedPrevious = true;
-    } catch {
+      await unlink(previousMdcPath);
+      removedPrevious = true;
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== 'ENOENT') {
+        throw error;
+      }
       // Previous rule may not exist — non-fatal.
     }
   }
@@ -171,6 +173,6 @@ export async function linkEngramToWorkspace(params: LinkEngramParams): Promise<L
     workspaceConfigPath: workspaceConfigPath(workspaceRoot),
     engramDirectory,
     previousEngramId,
-    deactivatedPrevious,
+    removedPrevious,
   };
 }

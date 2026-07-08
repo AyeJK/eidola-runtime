@@ -33,12 +33,12 @@ Everything else in `CLAUDE.md` is left untouched.
 
 Awakening a different Engram automatically replaces the previous one:
 
-- In Cursor, the previous Engram's rule is turned off (not deleted), so it no longer applies.
+- In Cursor, the previous Engram's rule is deleted outright.
 - In Claude Code, the previous Engram's soul file is removed and the `CLAUDE.md` import is repointed at the new one.
 
 ## Putting an Engram to sleep
 
-Calling `sleep` reverses what `awaken` set up: it turns off the Cursor rule, removes the Claude Code import, and clears the Shrine display.
+Calling `sleep` reverses what `awaken` set up: it deletes the Cursor rule, removes the Claude Code import and soul file, and clears the Shrine display.
 
 ## Keeping personas in sync
 
@@ -46,7 +46,7 @@ If you edit an Engram's `SOUL.md` after awakening it, re-run `awaken` to refresh
 
 ## One persona per workspace
 
-A Cursor workspace binds to a single Engram at a time. To switch to a different persona, awaken it — the previous one is deactivated automatically, as described above.
+A Cursor workspace binds to a single Engram at a time. To switch to a different persona, awaken it — the previous one is removed automatically, as described above.
 
 ---
 

@@ -123,7 +123,7 @@ describe('linkEngramToWorkspace', () => {
     expect(mdc).toContain('Fixture Engram');
   });
 
-  it('deactivates previous engram rule when switching', async () => {
+  it('removes previous engram rule when switching', async () => {
     tempWorkspace = await mkdtemp(join(tmpdir(), 'eidola-link-switch-'));
     tempEngrams = await mkdtemp(join(tmpdir(), 'eidola-engrams-'));
     await mkdir(tempEngrams, { recursive: true });
@@ -136,14 +136,14 @@ describe('linkEngramToWorkspace', () => {
       engramsDir: tempEngrams,
     });
 
-    await linkEngramToWorkspace({
+    const result = await linkEngramToWorkspace({
       workspaceRoot: tempWorkspace,
       engramId: 'beta',
       engramsDir: tempEngrams,
     });
 
-    const previousMdc = await readFile(cursorRulePath(tempWorkspace, 'alpha'), 'utf8');
-    expect(previousMdc).toContain('alwaysApply: false');
+    expect(result.removedPrevious).toBe(true);
+    await expect(readFile(cursorRulePath(tempWorkspace, 'alpha'), 'utf8')).rejects.toThrow();
 
     const activeMdc = await readFile(cursorRulePath(tempWorkspace, 'beta'), 'utf8');
     expect(activeMdc).toContain('alwaysApply: true');

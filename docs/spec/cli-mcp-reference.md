@@ -22,10 +22,11 @@ That's it — the Shrine UI handles loading the Engram, binding its Vessel, and 
 | `eidola mcp` | Starts the MCP server over stdio. This is what your editor's MCP config invokes — you won't normally run this by hand. |
 | `eidola launch shrine` | Starts the Shrine display (default `http://127.0.0.1:9743/shrine`) — this is where you pick a folder, pick an Engram, and click Awaken. |
 | `eidola kill shrine` | Stops a running Shrine display. |
-| `eidola setup-cursor [--project]` | Adds the Eidola MCP server to Cursor and installs the hooks that drive a reactive Vessel. Writes to `~/.cursor/` by default; pass `--project` to scope it to the current workspace instead. |
-| `eidola setup-claude [--project]` | Adds the Eidola MCP server to Claude Code and installs the hooks that drive a reactive Vessel. Writes to `~/.claude/` by default; pass `--project` to scope it to the current workspace instead. |
+| `eidola setup-cursor [--global]` | Adds the Eidola MCP server to Cursor and installs the hooks that drive a reactive Vessel. Writes to `.cursor/` in the current workspace by default; pass `--global` to scope it to `~/.cursor/` instead. |
+| `eidola setup-claude [--global]` | Adds the Eidola MCP server to Claude Code and installs the hooks that drive a reactive Vessel. Writes to `.claude/` in the current workspace by default; pass `--global` to scope it to `~/.claude/` instead. |
+| `eidola uninstall [--global]` | Removes the Eidola MCP server entry and hooks from both Cursor and Claude Code configs at the given scope, and cleans up any `awaken`-written personality artifacts still active in the workspace (`.cursor/rules/{id}.mdc` + `.cursor/eidola.json`, and the CLAUDE.md marker block + `.claude/souls/{id}.md`). Reports which files were changed, or that nothing was found. |
 
-Run `setup-cursor` and/or `setup-claude` once after installing, then restart your editor.
+Run `setup-cursor` and/or `setup-claude` once after installing, then restart your editor. Run `eidola uninstall` to remove Eidola's config from both editors again (matching `--global`/workspace-scoped as used at setup time) and clean up whichever Engram is currently awake in the workspace.
 
 ---
 

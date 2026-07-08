@@ -50,7 +50,7 @@ export function registerEidolaTools(server: McpServer, handlers: EidolaToolHandl
     {
       title: 'Sleep Engram',
       description:
-        'Put the active Engram\'s injected Soul to sleep — removes the platform-specific artifacts awaken wrote (Cursor .mdc deactivation, Claude Code CLAUDE.md import + soul file) and clears the Shrine display. Errors if nothing is active.',
+        'Put the active Engram\'s injected Soul to sleep — removes the platform-specific artifacts awaken wrote (Cursor .mdc, Claude Code CLAUDE.md import + soul file) and clears the Shrine display. Errors if nothing is active.',
       inputSchema: {},
     },
     async () => jsonResult(await handlers.sleep(server.server.getClientVersion())),

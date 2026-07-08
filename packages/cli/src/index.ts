@@ -93,9 +93,9 @@ export {
 } from './cursor/compile.js';
 export { linkEngramToWorkspace, type LinkEngramResult, type LinkEngramParams } from './cursor/link-engram.js';
 export {
-  deactivateEngramInWorkspace,
-  type DeactivateEngramResult,
-} from './cursor/deactivate-engram.js';
+  removeEngramFromWorkspace,
+  type RemoveEngramResult,
+} from './cursor/remove-engram.js';
 export {
   writeWorkspaceRegistry,
   readWorkspaceRegistry,

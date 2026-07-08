@@ -39,8 +39,8 @@ eidola setup-cursor   # Cursor
 ```
 
 Each writes the Eidola MCP server entry plus the hook relay config that
-drives a reactive Vessel from tool activity (global by default; pass
-`--project` to scope either command to the current workspace instead).
+drives a reactive Vessel from tool activity (workspace-scoped by default;
+pass `--global` to install to your home directory instead).
 
 ### 4. Launch the Shrine
 
@@ -66,8 +66,9 @@ You can do the same thing from chat instead — ask your agent to "Awaken
 | `eidola mcp` | Starts the MCP server over stdio. Your editor's MCP config invokes this — you won't normally run it by hand. |
 | `eidola launch shrine` | Starts the Shrine display (`http://127.0.0.1:9743/shrine`). |
 | `eidola kill shrine` | Stops a running Shrine display. |
-| `eidola setup-cursor [--project]` | Adds the Eidola MCP server to Cursor and installs the reactive-Vessel hooks. |
-| `eidola setup-claude [--project]` | Adds the Eidola MCP server to Claude Code and installs the reactive-Vessel hooks. |
+| `eidola setup-cursor [--global]` | Adds the Eidola MCP server to Cursor and installs the reactive-Vessel hooks. |
+| `eidola setup-claude [--global]` | Adds the Eidola MCP server to Claude Code and installs the reactive-Vessel hooks. |
+| `eidola uninstall [--global]` | Removes the Eidola MCP server entry and hooks from Cursor and Claude Code, plus any `awaken`-written personality files still active in the workspace. |
 
 ## MCP tools
 

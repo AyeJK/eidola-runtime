@@ -1,4 +1,4 @@
-import { access, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { access, mkdtemp, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -41,7 +41,7 @@ describe('sleep integration', () => {
     }
   });
 
-  it('cursor client sleep deactivates the .mdc and clears config, leaves Claude Code artifacts untouched', async () => {
+  it('cursor client sleep removes the .mdc and clears config, leaves Claude Code artifacts untouched', async () => {
     tempWorkspace = await tempDir('eidola-sleep-cursor-');
     const fixture = await createFixtureEngramsDir();
     tempEngramsDir = fixture.engramsDir;
@@ -62,8 +62,7 @@ describe('sleep integration', () => {
     expect(result.cursor_deactivated).toBe(true);
     expect(result.claude_md_removed).toBe(false);
 
-    const mdc = await readFile(cursorRulePath(tempWorkspace, FIXTURE_ENGRAM_ID), 'utf8');
-    expect(mdc).toContain('alwaysApply: false');
+    await expect(pathExists(cursorRulePath(tempWorkspace, FIXTURE_ENGRAM_ID))).resolves.toBe(false);
     await expect(readWorkspaceConfig(tempWorkspace)).resolves.toBeNull();
     await expect(pathExists(claudeMdPath(tempWorkspace))).resolves.toBe(false);
   });
@@ -115,8 +114,7 @@ describe('sleep integration', () => {
     expect(result.cursor_deactivated).toBe(true);
     expect(result.claude_md_removed).toBe(true);
 
-    const mdc = await readFile(cursorRulePath(tempWorkspace, FIXTURE_ENGRAM_ID), 'utf8');
-    expect(mdc).toContain('alwaysApply: false');
+    await expect(pathExists(cursorRulePath(tempWorkspace, FIXTURE_ENGRAM_ID))).resolves.toBe(false);
     await expect(hasClaudeMdSoulImport(tempWorkspace)).resolves.toBe(false);
     await expect(pathExists(claudeSoulPath(tempWorkspace, FIXTURE_ENGRAM_ID))).resolves.toBe(false);
   });

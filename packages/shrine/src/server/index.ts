@@ -4,7 +4,7 @@ import { createReadStream } from 'node:fs';
 import { access, stat } from 'node:fs/promises';
 import { join, extname, normalize, dirname, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { resolveEidolaRuntimeConfig, createStateSocketServer, SessionState, autoActivateFromWorkspace, listEngramDirectories, resolveEngramLocation, linkEngramToWorkspace, copySoulToWorkspace, ensureSoulImport, removeSoulImport, removeSoulFromWorkspace, findActiveSoulImportEngramId, deactivateEngramInWorkspace, resolveActiveEngram, readWorkspaceRegistry, readWorkspaceConfig, writeMcpAwakenSignal, writeShrineLock, removeShrineLock, type EngramListEntry, type StateSocketServer } from '../vendor/mcp.js';
+import { resolveEidolaRuntimeConfig, createStateSocketServer, SessionState, autoActivateFromWorkspace, listEngramDirectories, resolveEngramLocation, linkEngramToWorkspace, copySoulToWorkspace, ensureSoulImport, removeSoulImport, removeSoulFromWorkspace, findActiveSoulImportEngramId, removeEngramFromWorkspace, resolveActiveEngram, readWorkspaceRegistry, readWorkspaceConfig, writeMcpAwakenSignal, writeShrineLock, removeShrineLock, type EngramListEntry, type StateSocketServer } from '../vendor/mcp.js';
 import { resolveShrineSurface, shrineHttpPort, type ShrineSurface } from '../shared/shrine-surface.js';
 import { buildHttpClipUrl, toHttpClipUrl, type ShrineStatePayload } from '../shared/types.js';
 import { StateSocketClient } from '../shared/state-socket-client.js';
@@ -787,8 +787,8 @@ export class ShrineHttpServer {
 
     const registry = await readWorkspaceRegistry();
     if (registry?.workspace_root) {
-      const deactivated = await deactivateEngramInWorkspace(registry.workspace_root, activeEngramId);
-      cursorDeactivated = deactivated.mdcDeactivated || deactivated.configCleared;
+      const removedEngram = await removeEngramFromWorkspace(registry.workspace_root, activeEngramId);
+      cursorDeactivated = removedEngram.mdcRemoved || removedEngram.configCleared;
 
       const removedImport = await removeSoulImport(registry.workspace_root);
       const removedSoul = await removeSoulFromWorkspace(registry.workspace_root, activeEngramId);
