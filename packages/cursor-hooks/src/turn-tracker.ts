@@ -24,8 +24,14 @@ const DEFAULT_TURN_STATE: TurnState = {
 /** Hooks that start a tool's execution (in-flight counter increments). */
 export const TOOL_START_HOOKS = new Set(['preToolUse', 'subagentStart']);
 
-/** Hooks that end a tool's execution (in-flight counter decrements). */
-export const TOOL_END_HOOKS = new Set(['postToolUse', 'subagentStop']);
+/**
+ * Hooks that end a tool's execution (in-flight counter decrements).
+ * `postToolUseFailure` fires instead of `postToolUse` when a tool errors —
+ * omitting it here left every failed tool call leaking a permanent +1 into
+ * `inFlight` for the rest of the turn, wedging the Vessel on `working` since
+ * the socket server holds the busy tier while `tools_in_flight > 0`.
+ */
+export const TOOL_END_HOOKS = new Set(['postToolUse', 'postToolUseFailure', 'subagentStop']);
 
 /** Hooks that imply tool activity this turn (including false-negative guards). */
 export const TOOLS_USED_HOOKS = new Set([

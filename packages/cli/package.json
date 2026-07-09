@@ -1,6 +1,6 @@
 {
   "name": "@eidola/cli",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "type": "module",
   "description": "Portable AI personality runtime — MCP server, Shrine display, and reactive Vessel control (requires eidola setup-hooks).",
   "license": "MIT",

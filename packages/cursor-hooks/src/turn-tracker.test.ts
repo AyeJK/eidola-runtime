@@ -7,6 +7,7 @@ import {
   resetTurnState,
   simulateHookTimeline,
   simulateVisualTimeline,
+  TOOL_END_HOOKS,
   updateTurnForHook,
 } from './turn-tracker.js';
 
@@ -175,6 +176,22 @@ describe('in-flight tool counter', () => {
 
     expect(decrementTurnToolInFlight()).toBe(0);
     expect(decrementTurnToolInFlight()).toBe(0);
+  });
+
+  it('treats postToolUseFailure as a tool-end hook, same as postToolUse', () => {
+    // A tool that errors fires postToolUseFailure instead of postToolUse —
+    // if that hook isn't wired to decrement, a failed tool call leaks a
+    // permanent +1 into inFlight for the rest of the turn, wedging the
+    // Vessel on 'working' (socket server holds the busy tier whenever
+    // tools_in_flight > 0). Regression coverage for that exact bug.
+    expect(TOOL_END_HOOKS.has('postToolUseFailure')).toBe(true);
+
+    resetTurnState();
+    incrementTurnToolInFlight(); // preToolUse for a tool call that will fail
+    incrementTurnToolInFlight(); // preToolUse for a sibling tool call
+
+    expect(decrementTurnToolInFlight()).toBe(1); // the failing tool's postToolUseFailure
+    expect(readTurnState().inFlight).toBe(1);
   });
 
   it('persists the in-flight count across simulated fresh-process round-trips', () => {
