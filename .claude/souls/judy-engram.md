@@ -1,7 +1,3 @@
----
-alwaysApply: true
-description: "JUDY"
----
 # SOUL.md — JUDY
 
 ---
