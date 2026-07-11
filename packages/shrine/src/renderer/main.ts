@@ -354,17 +354,21 @@ function runShrine(): void {
     }
     approvalIdle.onState(payload);
 
+    // Cache idle before the success-hold gate can swallow it — the gate
+    // intentionally nulls `idle` while holding (relay fires idle immediately
+    // after success text), so the cache must capture it here or transitionToIdle
+    // and VesselPlayer's own auto-idle end up replaying a stale/absent payload.
+    if (payload.broadcast.state === 'idle') {
+      cachedIdlePayload = payload;
+      player.setIdlePayload(payload);
+    }
+
     const gated = successHold.filter(payload);
     if (!gated) {
       return;
     }
 
     lastGatedPayload = gated;
-
-    if (gated.broadcast.state === 'idle') {
-      cachedIdlePayload = gated;
-      player.setIdlePayload(gated);
-    }
 
     if (!shouldRenderVessel()) {
       if (pendingAwakenRender && browserAwakened) {
